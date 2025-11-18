@@ -12,14 +12,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   userInterfaceStyle: "automatic",
   newArchEnabled: true,
 
-  extra: {
-    firebaseFunctionsUrl: process.env.EXPO_PUBLIC_FIREBASE_FUNCTIONS_URL,
-  },
-
-  ios: {
-    supportsTablet: true,
-  },
-
+  ios: { supportsTablet: true },
   android: {
     adaptiveIcon: {
       backgroundColor: "#E6F4FE",
@@ -30,14 +23,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
   },
-
-  web: {
-    output: "static",
-    favicon: "./assets/images/favicon.png",
-  },
+  web: { output: "static", favicon: "./assets/images/favicon.png" },
 
   plugins: [
     "expo-router",
+    ["expo-env", { path: "./.env" }],               // This is the key line
     [
       "expo-splash-screen",
       {
@@ -45,9 +35,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         imageWidth: 200,
         resizeMode: "contain",
         backgroundColor: "#ffffff",
-        dark: {
-          backgroundColor: "#000000",
-        },
+        dark: { backgroundColor: "#000000" },
       },
     ],
   ],
