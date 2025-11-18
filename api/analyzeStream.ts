@@ -1,3 +1,4 @@
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { openai } from '@ai-sdk/openai';
 import { streamObject } from 'ai';
 import { z } from 'zod';
@@ -34,15 +35,23 @@ const resumeAnalysisSchema = z.object({
   overallFeedback: z.string().describe('Comprehensive summary and recommendations')
 });
 
-export async function POST(request: Request) {
+/**
+ * Vercel Serverless Function for streaming resume analysis
+ */
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
+  }
+
   try {
-    const { resumeText, jobDescription } = await request.json();
+    const { resumeText, jobDescription } = req.body;
 
     if (!resumeText || !jobDescription) {
-      return new Response(
-        JSON.stringify({ error: 'Missing required fields: resumeText and jobDescription' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
+      res.status(400).json({
+        error: 'Missing required fields: resumeText and jobDescription'
+      });
+      return;
     }
 
     const result = streamObject({
@@ -144,12 +153,10 @@ ANALYSIS INSTRUCTIONS:
 Provide a thorough, honest analysis with specific examples from both the resume and job posting. Help candidates understand not just IF they're a fit, but HOW to position themselves better and what to BUILD to become more competitive.`,
     });
 
+    // Return the streaming response using Vercel's Response API
     return result.toTextStreamResponse();
   } catch (error) {
     console.error('Analysis error:', error);
-    return new Response(
-      JSON.stringify({ error: 'Failed to analyze resume' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
+    res.status(500).json({ error: 'Failed to analyze resume' });
   }
 }
