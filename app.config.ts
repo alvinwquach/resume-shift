@@ -35,13 +35,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   plugins: [
     "expo-router",
     [
-      "expo-env",
-      { 
-        path: "./.env", 
-        scheme: "all"    
-      }
-    ],
-    [
       "expo-splash-screen",
       {
         image: "./assets/images/splash-icon.png",
