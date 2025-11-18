@@ -1,0 +1,144 @@
+import { Card, PageLayout } from "@/components";
+import { Ionicons } from "@expo/vector-icons";
+import { Text, View } from "react-native";
+
+export default function ChangelogPage() {
+  return (
+    <PageLayout>
+      <Text className="text-white text-4xl font-bold mb-4">Changelog</Text>
+      <Text className="text-zinc-400 text-lg leading-relaxed mb-12">
+        All the latest updates, improvements, and bug fixes.
+      </Text>
+      <View className="mb-10">
+        <View className="flex-row items-center justify-between mb-4">
+          <View>
+            <Text className="text-white text-2xl font-bold mb-1">v1.0.0</Text>
+            <Text className="text-zinc-500 text-sm">November 2025</Text>
+          </View>
+          <View className="bg-green-500/20 border border-green-500/30 rounded-full px-3 py-1">
+            <Text className="text-green-400 text-xs font-semibold">Latest</Text>
+          </View>
+        </View>
+        <Card className="mb-4">
+          <Text className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-3">
+            New Features
+          </Text>
+          <View className="mb-3">
+            <Text className="text-white text-base font-medium mb-1">
+              🎉 Initial Launch
+            </Text>
+            <Text className="text-zinc-400 text-sm leading-relaxed">
+              ResumeShift is officially live! Upload your resume and job links
+              to get instant fit scores.
+            </Text>
+          </View>
+          <View className="mb-3">
+            <Text className="text-white text-base font-medium mb-1">
+              ✨ AI-Powered Analysis
+            </Text>
+            <Text className="text-zinc-400 text-sm leading-relaxed">
+              Advanced AI algorithms analyze your resume against job
+              requirements to provide accurate compatibility scores.
+            </Text>
+          </View>
+          <View className="mb-3">
+            <Text className="text-white text-base font-medium mb-1">
+              💡 Personalized Feedback
+            </Text>
+            <Text className="text-zinc-400 text-sm leading-relaxed">
+              Get specific, actionable suggestions on how to improve your resume
+              for each job application.
+            </Text>
+          </View>
+          <View>
+            <Text className="text-white text-base font-medium mb-1">
+              🔒 Secure Authentication
+            </Text>
+            <Text className="text-zinc-400 text-sm leading-relaxed">
+              Sign in securely with Google to access your personalized dashboard
+              and saved analyses.
+            </Text>
+          </View>
+        </Card>
+        <Card>
+          <Text className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-3">
+            Platform
+          </Text>
+          <View className="mb-3">
+            <Text className="text-white text-base font-medium mb-1">
+              📱 Mobile-First Design
+            </Text>
+            <Text className="text-zinc-400 text-sm leading-relaxed">
+              Built with React Native and Expo for seamless iOS and Android
+              experiences.
+            </Text>
+          </View>
+          <View>
+            <Text className="text-white text-base font-medium mb-1">
+              🎨 Modern Dark Mode UI
+            </Text>
+            <Text className="text-zinc-400 text-sm leading-relaxed">
+              Beautiful, professional interface inspired by Linear, Vercel, and
+              Notion.
+            </Text>
+          </View>
+        </Card>
+      </View>
+      <View className="mb-10">
+        <Text className="text-white text-2xl font-bold mb-4">Coming Soon</Text>
+        <Card className="mb-4">
+          <Text className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-3">
+            Planned Features
+          </Text>
+          <View className="mb-3">
+            <Text className="text-zinc-300 text-base font-medium mb-1">
+              📊 Resume History Dashboard
+            </Text>
+            <Text className="text-zinc-500 text-sm leading-relaxed">
+              Track all your resume analyses and compare results over time.
+            </Text>
+          </View>
+          <View className="mb-3">
+            <Text className="text-zinc-300 text-base font-medium mb-1">
+              💾 Save Job Matches
+            </Text>
+            <Text className="text-zinc-500 text-sm leading-relaxed">
+              Bookmark analyzed jobs and quickly reference your best matches.
+            </Text>
+          </View>
+          <View className="mb-3">
+            <Text className="text-zinc-300 text-base font-medium mb-1">
+              📈 Match Score Trends
+            </Text>
+            <Text className="text-zinc-500 text-sm leading-relaxed">
+              See how your resume improvements impact your match scores over
+              time.
+            </Text>
+          </View>
+          <View>
+            <Text className="text-zinc-300 text-base font-medium mb-1">
+              🔔 New Job Alerts
+            </Text>
+            <Text className="text-zinc-500 text-sm leading-relaxed">
+              Get notified when jobs matching your profile are posted.
+            </Text>
+          </View>
+        </Card>
+      </View>
+      <Card padding="md" className="rounded-2xl">
+        <View className="flex-row items-start mb-3">
+          <Ionicons name="chatbubble-outline" size={24} color="#fff" />
+          <View className="flex-1 ml-3">
+            <Text className="text-white text-xl font-bold mb-2">
+              Have feedback?
+            </Text>
+            <Text className="text-zinc-400 text-base leading-relaxed">
+              We'd love to hear your thoughts on what features you'd like to see
+              next. Your feedback helps shape ResumeShift's future.
+            </Text>
+          </View>
+        </View>
+      </Card>
+    </PageLayout>
+  );
+}
