@@ -153,8 +153,27 @@ ANALYSIS INSTRUCTIONS:
 Provide a thorough, honest analysis with specific examples from both the resume and job posting. Help candidates understand not just IF they're a fit, but HOW to position themselves better and what to BUILD to become more competitive.`,
     });
 
-    // Return the streaming response using Vercel's Response API
-    return result.toTextStreamResponse();
+    // Set headers for streaming
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Transfer-Encoding', 'chunked');
+
+    // Get the stream and pipe it to the response
+    const stream = result.toTextStreamResponse();
+    const reader = stream.body?.getReader();
+
+    if (!reader) {
+      res.status(500).json({ error: 'Failed to create stream' });
+      return;
+    }
+
+    // Stream the response
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      res.write(value);
+    }
+
+    res.end();
   } catch (error) {
     console.error('Analysis error:', error);
     res.status(500).json({ error: 'Failed to analyze resume' });
