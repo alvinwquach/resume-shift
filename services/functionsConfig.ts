@@ -1,29 +1,28 @@
+/**
+ * API Configuration
+ * Uses Vercel serverless functions by default.
+ * Can optionally use Firebase Cloud Functions by setting EXPO_PUBLIC_FIREBASE_FUNCTIONS_URL.
+ */
 const FUNCTIONS_BASE_URL = process.env.EXPO_PUBLIC_FIREBASE_FUNCTIONS_URL || '';
 
-if (!FUNCTIONS_BASE_URL && process.env.NODE_ENV === 'production') {
-  console.warn(
-    'Warning: EXPO_PUBLIC_FIREBASE_FUNCTIONS_URL is not set. ' +
-    'API calls will fail in production. Please set this environment variable.'
-  );
-}
-
 /**
- * Get the full URL for a Cloud Function
+ * Get the full URL for an API endpoint
+ * By default, uses Vercel serverless functions at /api/*
+ * If EXPO_PUBLIC_FIREBASE_FUNCTIONS_URL is set, uses Firebase Cloud Functions instead
  */
 function getFunctionUrl(functionName: string): string {
-  if (!FUNCTIONS_BASE_URL) {
-    // Fallback to local API routes for development
-    console.warn(
-      `Using local API fallback for ${functionName}. ` +
-      'Set EXPO_PUBLIC_FIREBASE_FUNCTIONS_URL to use Cloud Functions.'
-    );
-    return `/api/${functionName}`;
+  if (FUNCTIONS_BASE_URL) {
+    // Use Firebase Cloud Functions if URL is configured
+    console.log(`Using Firebase Cloud Functions for ${functionName}`);
+    return `${FUNCTIONS_BASE_URL}/${functionName}`;
   }
-  return `${FUNCTIONS_BASE_URL}/${functionName}`;
+
+  // Default to Vercel serverless functions
+  return `/api/${functionName}`;
 }
 
 /**
- * Firebase Cloud Functions endpoints
+ * API endpoints for serverless functions
  */
 export const FUNCTIONS_ENDPOINTS = {
   EXTRACT_RESUME: getFunctionUrl('extractResume'),
