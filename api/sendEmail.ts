@@ -77,7 +77,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const resendClient = getResendClient();
     const { data, error } = await resendClient.emails.send({
-      from: 'Resume Optimizer <onboarding@resend.dev>',
+      from: 'Resume Pivot <noreply@resumepivot.xyz>',
       to: [email],
       subject: `Resume Analysis: ${jobTitle || 'Job Position'}${jobCompany ? ` at ${jobCompany}` : ''}`,
       html: htmlContent,

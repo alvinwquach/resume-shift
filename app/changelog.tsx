@@ -60,62 +60,6 @@ export default function ChangelogPage() {
             </Text>
           </View>
         </Card>
-        <Card>
-          <Text className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-3">
-            Platform
-          </Text>
-          <View className="mb-3">
-            <Text className="text-white text-base font-medium mb-1">
-              📱 Mobile-First Design
-            </Text>
-            <Text className="text-zinc-400 text-sm leading-relaxed">
-              Built with React Native and Expo for seamless iOS and Android
-              experiences.
-            </Text>
-          </View>
-          <View>
-            <Text className="text-white text-base font-medium mb-1">
-              🎨 Modern Dark Mode UI
-            </Text>
-            <Text className="text-zinc-400 text-sm leading-relaxed">
-              Beautiful, professional interface inspired by Linear, Vercel, and
-              Notion.
-            </Text>
-          </View>
-        </Card>
-      </View>
-      <View className="mb-10">
-        <Text className="text-white text-2xl font-bold mb-4">Coming Soon</Text>
-        <Card className="mb-4">
-          <Text className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-3">
-            Planned Features
-          </Text>
-          <View className="mb-3">
-            <Text className="text-zinc-300 text-base font-medium mb-1">
-              📊 Resume History Dashboard
-            </Text>
-            <Text className="text-zinc-500 text-sm leading-relaxed">
-              Track all your resume analyses and compare results over time.
-            </Text>
-          </View>
-          <View className="mb-3">
-            <Text className="text-zinc-300 text-base font-medium mb-1">
-              💾 Save Job Matches
-            </Text>
-            <Text className="text-zinc-500 text-sm leading-relaxed">
-              Bookmark analyzed jobs and quickly reference your best matches.
-            </Text>
-          </View>
-          <View className="mb-3">
-            <Text className="text-zinc-300 text-base font-medium mb-1">
-              📈 Match Score Trends
-            </Text>
-            <Text className="text-zinc-500 text-sm leading-relaxed">
-              See how your resume improvements impact your match scores over
-              time.
-            </Text>
-          </View>
-        </Card>
       </View>
       <Card padding="md" className="rounded-2xl">
         <View className="flex-row items-start mb-3">

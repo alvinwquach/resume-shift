@@ -3,6 +3,8 @@ import { onAuthStateChanged, User } from "firebase/auth";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { auth } from "../firebaseConfig";
+import { QueryProvider } from "../providers/QueryProvider";
+import Toast from 'react-native-toast-message';
 import "../global.css";
 
 export default function RootLayout() {
@@ -31,14 +33,13 @@ export default function RootLayout() {
       // Redirect to login page if user is not authenticated
       console.log("Redirecting to login page - user not authenticated");
       router.replace("/login");
-    } else if (user && !inAuthGroup && segments[0] === "login") {
-      // Redirect to optimize page if user is authenticated and on login page
-      console.log("Redirecting to optimize - user authenticated");
-      router.replace("/(tabs)/optimize");
     }
+    // Removed auto-redirect from login page - allow users to manually log in/switch accounts
   }, [user, segments, loading, router]);
 
-  if (loading) {
+  // Only show loading state for protected routes, not for landing page
+  const isLandingPage = segments.length === 0 || segments[0] === "index";
+  if (loading && !isLandingPage) {
     return (
       <View className="flex-1 bg-black items-center justify-center">
         <ActivityIndicator size="large" color="#fff" />
@@ -46,5 +47,10 @@ export default function RootLayout() {
     );
   }
 
-  return <Slot />;
+  return (
+    <QueryProvider>
+      <Slot />
+      <Toast />
+    </QueryProvider>
+  );
 }

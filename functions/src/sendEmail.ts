@@ -397,7 +397,7 @@ export const sendEmail = onRequest({ cors: true }, async (req, res) => {
     });
 
     const { data, error } = await resend.emails.send({
-      from: 'Resume Optimizer <onboarding@resend.dev>',
+      from: 'Resume Pivot <noreply@resumepivot.xyz>',
       to: [email],
       subject: `Resume Analysis: ${jobTitle || 'Job Position'}${jobCompany ? ` at ${jobCompany}` : ''}`,
       html: htmlContent,
