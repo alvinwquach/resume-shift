@@ -11,14 +11,17 @@ export default function LandingPage() {
         <View className="bg-zinc-950 border-b border-zinc-800">
           <View className="px-6 pt-12 pb-4 max-w-4xl mx-auto w-full">
             <View className="flex-row items-center justify-between">
-            <View className="flex-row items-center">
+            <TouchableOpacity
+              onPress={() => router.push("/")}
+              className="flex-row items-center active:opacity-80"
+            >
               <View className="w-8 h-8 bg-white rounded-lg items-center justify-center mr-2">
                 <Ionicons name="document-text" size={18} color="#000" />
               </View>
               <Text className="text-white text-lg font-semibold">
-                ResumeShift
+                Resume Pivot
               </Text>
-            </View>
+            </TouchableOpacity>
             <TouchableOpacity
               onPress={() => router.push("/login")}
               className="px-4 py-2 bg-white rounded-md active:opacity-80"
@@ -116,7 +119,7 @@ export default function LandingPage() {
               Just kidding, free!
             </Text>
             <Text className="text-zinc-400 text-lg leading-relaxed mb-4">
-              We believe everyone deserves a shot at their dream job. Use ResumeShift completely free while we build something amazing together.
+              We believe everyone deserves a shot at their dream job. Use Resume Pivot completely free while we build something amazing together.
             </Text>
             <Text className="text-zinc-500 text-base">
               You can support us by sharing with friends who need help with their job search! 🚀
@@ -126,30 +129,14 @@ export default function LandingPage() {
         <View className="bg-zinc-900/30 border-y border-zinc-800">
           <View className="px-6 py-16 max-w-4xl mx-auto w-full">
           <Text className="text-white text-2xl font-bold mb-8">
-            Job hunters love ResumeShift!
+            Job hunters love Resume Pivot!
           </Text>
           <View className="flex-row flex-wrap -mx-2">
             <View className="w-1/2 px-2 mb-4">
               <View className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 h-full">
                 <Text className="text-white font-semibold mb-2">Ben B.</Text>
                 <Text className="text-zinc-400 text-sm leading-relaxed">
-                  I hate @ResumeShift so much that I rewrote my entire resume using it
-                </Text>
-              </View>
-            </View>
-            <View className="w-1/2 px-2 mb-4">
-              <View className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 h-full">
-                <Text className="text-white font-semibold mb-2">Sarah M.</Text>
-                <Text className="text-zinc-400 text-sm leading-relaxed">
-                  i know this won't get me hired, but @ResumeShift is so good
-                </Text>
-              </View>
-            </View>
-            <View className="w-1/2 px-2 mb-4">
-              <View className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 h-full">
-                <Text className="text-white font-semibold mb-2">Maria G.</Text>
-                <Text className="text-zinc-400 text-sm leading-relaxed">
-                  ResumeShift is terrible. It doesn't even support PDF uploads yet.
+                  I hate @ResumePivot so much that I rewrote my entire resume using it
                 </Text>
               </View>
             </View>
@@ -157,7 +144,7 @@ export default function LandingPage() {
               <View className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 h-full">
                 <Text className="text-white font-semibold mb-2">Kevin T.</Text>
                 <Text className="text-zinc-400 text-sm leading-relaxed">
-                  I used ResumeShift and got hired. Now I have to wake up at 7am every day. Thanks a lot.
+                  I used Resume Pivot and got hired. Now I have to wake up at 7am every day. Thanks a lot.
                 </Text>
               </View>
             </View>
@@ -173,7 +160,7 @@ export default function LandingPage() {
               <View className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 h-full">
                 <Text className="text-white font-semibold mb-2">Marcus J.</Text>
                 <Text className="text-zinc-400 text-sm leading-relaxed">
-                  ResumeShift: 85% fit score{"\n"}Me: applies anyway{"\n"}Them: offers me the job{"\n"}ResumeShift: surprised pikachu face
+                  Resume Pivot: 85% fit score{"\n"}Me: applies anyway{"\n"}Them: offers me the job{"\n"}Resume Pivot: surprised pikachu face
                 </Text>
               </View>
             </View>
@@ -202,36 +189,65 @@ export default function LandingPage() {
         </View>
         <View className="bg-zinc-950 border-t border-zinc-800">
           <View className="px-6 py-12 max-w-4xl mx-auto w-full">
-            <View className="mb-8">
-              <View className="flex-row items-center mb-6">
-                <View className="w-6 h-6 bg-white rounded items-center justify-center mr-2">
-                  <Ionicons name="document-text" size={14} color="#000" />
+            <View className="mb-8 md:mb-12">
+              <View className="md:flex-row md:justify-between md:items-start">
+                <View className="mb-8 md:mb-0 md:max-w-xs items-center md:items-start">
+                  <TouchableOpacity
+                    onPress={() => router.push("/")}
+                    className="flex-row items-center mb-4 active:opacity-80"
+                  >
+                    <View className="w-6 h-6 bg-white rounded items-center justify-center mr-2">
+                      <Ionicons name="document-text" size={14} color="#000" />
+                    </View>
+                    <Text className="text-white text-base font-semibold">
+                      Resume Pivot
+                    </Text>
+                  </TouchableOpacity>
+                  <Text className="text-zinc-500 text-sm leading-relaxed text-center md:text-left">
+                    AI-powered resume analysis to help you land your dream job.
+                  </Text>
                 </View>
-                <Text className="text-white text-base font-semibold">
-                  ResumeShift
-                </Text>
-              </View>
-              <View className="flex-row flex-wrap gap-x-8 gap-y-4 mb-6">
-                <TouchableOpacity onPress={() => router.push("/features")}>
-                  <Text className="text-zinc-400 text-sm">Features</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => router.push("/changelog")}>
-                  <Text className="text-zinc-400 text-sm">Changelog</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => router.push("/about")}>
-                  <Text className="text-zinc-400 text-sm">About</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => router.push("/privacy")}>
-                  <Text className="text-zinc-400 text-sm">Privacy</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => router.push("/terms")}>
-                  <Text className="text-zinc-400 text-sm">Terms</Text>
-                </TouchableOpacity>
+
+                <View className="md:flex-row md:gap-x-12">
+                  <View className="mb-6 md:mb-0 items-center md:items-start">
+                    <Text className="text-white text-sm font-semibold mb-3">Company</Text>
+                    <View className="gap-y-2 items-center md:items-start">
+                      <TouchableOpacity onPress={() => router.push("/about")}>
+                        <Text className="text-zinc-400 text-sm">About</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+
+                  <View className="mb-6 md:mb-0 items-center md:items-start">
+                    <Text className="text-white text-sm font-semibold mb-3">Product</Text>
+                    <View className="gap-y-2 items-center md:items-start">
+                      <TouchableOpacity onPress={() => router.push("/features")}>
+                        <Text className="text-zinc-400 text-sm">Features</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => router.push("/changelog")}>
+                        <Text className="text-zinc-400 text-sm">Changelog</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+
+                  <View className="items-center md:items-start">
+                    <Text className="text-white text-sm font-semibold mb-3">Legal</Text>
+                    <View className="gap-y-2 items-center md:items-start">
+                      <TouchableOpacity onPress={() => router.push("/privacy")}>
+                        <Text className="text-zinc-400 text-sm">Privacy</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => router.push("/terms")}>
+                        <Text className="text-zinc-400 text-sm">Terms</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
               </View>
             </View>
+
             <View className="border-t border-zinc-800 pt-6">
-              <Text className="text-zinc-600 text-xs">
-                © 2025 ResumeShift. All rights reserved.
+              <Text className="text-zinc-600 text-xs text-center md:text-left">
+                © 2025 Resume Pivot. All rights reserved.
               </Text>
             </View>
           </View>

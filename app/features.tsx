@@ -1,6 +1,6 @@
+import { FeatureList, PageLayout, Section } from "@/components";
 import { useRouter } from "expo-router";
-import { Text, View, TouchableOpacity } from "react-native";
-import { PageLayout, Section, FeatureList } from "@/components";
+import { Text, TouchableOpacity, View } from "react-native";
 
 const jobFitAnalysisFeatures = [
   { icon: "", title: "Deep content analysis", description: "" },
@@ -44,57 +44,61 @@ export default function FeaturesPage() {
     <PageLayout>
       <Text className="text-white text-4xl font-bold mb-4">Features</Text>
       <Text className="text-zinc-400 text-lg leading-relaxed mb-12">
-        Everything you need to optimize your resume and land your dream job.
+        Everything you need to pivot your resume and land your dream job.
       </Text>
 
-      <Section
-        icon="sparkles"
-        title="AI-Powered Job Fit Analysis"
-        subtitle="Our advanced AI analyzes your resume against any public job posting to determine how well you match the role's requirements."
-      >
-        <FeatureList features={jobFitAnalysisFeatures} />
-      </Section>
-      <Section
-        icon="analytics"
-        title="Instant Compatibility Score"
-        subtitle="Get a clear, quantified score showing how well your resume matches the job requirements. No more guessing if you're qualified."
-      >
-        <FeatureList features={compatibilityScoreFeatures} />
-      </Section>
-      <Section
-        icon="bulb"
-        title="Personalized Improvement Suggestions"
-        subtitle="Receive specific, actionable feedback tailored to each job application. Know exactly what to change to improve your chances."
-      >
-        <FeatureList features={improvementSuggestionsFeatures} />
-      </Section>
-      <Section
-        icon="shield-checkmark"
-        title="Secure and Private"
-        subtitle="Your resume and personal data are encrypted and protected. We never share your information with third parties or use it for training."
-      >
-        <FeatureList features={securityFeatures} />
-      </Section>
-      <Section
-        icon="flash"
-        title="Simple and Fast"
-        subtitle="Upload your resume, paste a job link, and get results in seconds. No complex setup or learning curve required."
-      >
-        <FeatureList features={easeOfUseFeatures} />
-      </Section>
-      <View className="mt-8 bg-white rounded-xl p-8">
-        <Text className="text-black text-2xl font-bold mb-3">
+      <View className="flex-row flex-wrap -mx-2">
+        <View className="w-1/2 px-2">
+          <Section
+            icon="sparkles"
+            title="AI-Powered Job Fit Analysis"
+            subtitle="Our advanced AI analyzes your resume against any public job posting to determine how well you match the role's requirements."
+          >
+            <FeatureList features={jobFitAnalysisFeatures} />
+          </Section>
+        </View>
+        <View className="w-1/2 px-2">
+          <Section
+            icon="analytics"
+            title="Instant Compatibility Score"
+            subtitle="Get a clear, quantified score showing how well your resume matches the job requirements. No more guessing if you're qualified."
+          >
+            <FeatureList features={compatibilityScoreFeatures} />
+          </Section>
+        </View>
+        <View className="w-1/2 px-2">
+          <Section
+            icon="bulb"
+            title="Personalized Suggestions"
+            subtitle="Receive specific, actionable feedback tailored to each job application. Know exactly what to change to improve your chances."
+          >
+            <FeatureList features={improvementSuggestionsFeatures} />
+          </Section>
+        </View>
+        <View className="w-1/2 px-2">
+          <Section
+            icon="shield-checkmark"
+            title="Secure and Private"
+            subtitle="Your resume and personal data are encrypted and protected. We never share your information with third parties or use it for training."
+          >
+            <FeatureList features={securityFeatures} />
+          </Section>
+        </View>
+      </View>
+
+      <View className="mt-8 bg-zinc-900 border border-zinc-800 rounded-xl p-8">
+        <Text className="text-white text-2xl font-bold mb-3">
           Ready to get started?
         </Text>
-        <Text className="text-zinc-600 text-base mb-6 leading-relaxed">
+        <Text className="text-zinc-400 text-base mb-6 leading-relaxed">
           Start optimizing your resume today and increase your chances of
           landing your dream job.
         </Text>
         <TouchableOpacity
           onPress={() => router.push("/login")}
-          className="bg-black rounded-lg px-6 py-4 active:opacity-80"
+          className="bg-white rounded-lg px-6 py-4 active:opacity-80"
         >
-          <Text className="text-white font-semibold text-base text-center">
+          <Text className="text-black font-semibold text-base text-center">
             Get started for free
           </Text>
         </TouchableOpacity>

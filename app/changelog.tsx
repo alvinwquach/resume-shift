@@ -28,7 +28,7 @@ export default function ChangelogPage() {
               🎉 Initial Launch
             </Text>
             <Text className="text-zinc-400 text-sm leading-relaxed">
-              ResumeShift is officially live! Upload your resume and job links
+              Resume Pivot is officially live! Upload your resume and job links
               to get instant fit scores.
             </Text>
           </View>
@@ -113,14 +113,6 @@ export default function ChangelogPage() {
             <Text className="text-zinc-500 text-sm leading-relaxed">
               See how your resume improvements impact your match scores over
               time.
-            </Text>
-          </View>
-          <View>
-            <Text className="text-zinc-300 text-base font-medium mb-1">
-              🔔 New Job Alerts
-            </Text>
-            <Text className="text-zinc-500 text-sm leading-relaxed">
-              Get notified when jobs matching your profile are posted.
             </Text>
           </View>
         </Card>
