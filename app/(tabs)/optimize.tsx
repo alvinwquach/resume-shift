@@ -7,6 +7,7 @@ import { AnalysisResults } from "../../components/AnalysisResults";
 import { useAuth } from "../../hooks/useAuth";
 import { saveAnalysis } from "../../services/analysisService";
 import { ResumeAnalysisResult } from "../../types/analysis";
+import { FUNCTIONS_ENDPOINTS } from "../../services/functionsConfig";
 
 type Message = {
   id: string;
@@ -99,12 +100,13 @@ export default function OptimizePage() {
           }
 
           // Use AI to extract text from the file
-          const extractResponse = await fetch("/api/extract-resume", {
+          const extractResponse = await fetch(FUNCTIONS_ENDPOINTS.EXTRACT_RESUME, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               fileData: base64,
               fileName: file.name,
+              mimeType: file.mimeType,
             }),
           });
 
@@ -201,7 +203,7 @@ export default function OptimizePage() {
     setMessages(prev => [...prev, streamingMsg]);
 
     try {
-      const jobResponse = await fetch("/api/fetch-job", {
+      const jobResponse = await fetch(FUNCTIONS_ENDPOINTS.FETCH_JOB, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ jobUrl: userMessage }),
@@ -219,7 +221,7 @@ export default function OptimizePage() {
           : msg
       ));
 
-      const analysisResponse = await fetch("/api/analyze-stream", {
+      const analysisResponse = await fetch(FUNCTIONS_ENDPOINTS.ANALYZE_STREAM, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

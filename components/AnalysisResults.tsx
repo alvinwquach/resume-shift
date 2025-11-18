@@ -9,6 +9,7 @@ import { SkillMatchItem } from "./SkillMatchItem";
 import { ExperienceGapCard } from "./ExperienceGapCard";
 import { ProjectRecommendationCard } from "./ProjectRecommendationCard";
 import { KeywordRecommendationCard } from "./KeywordRecommendationCard";
+import { FUNCTIONS_ENDPOINTS } from "../services/functionsConfig";
 
 interface AnalysisResultsProps {
   result: Partial<ResumeAnalysisResult>;
@@ -32,8 +33,8 @@ export function AnalysisResults({ result, userEmail, jobTitle, jobCompany, resum
 
     setIsSendingEmail(true);
     try {
-      console.log('Calling /api/send-email endpoint...');
-      const response = await fetch('/api/send-email', {
+      console.log('Calling sendEmail Cloud Function...');
+      const response = await fetch(FUNCTIONS_ENDPOINTS.SEND_EMAIL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
