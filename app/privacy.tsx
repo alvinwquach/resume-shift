@@ -1,5 +1,5 @@
+import { Card, LegalSection, PageLayout } from "@/components";
 import { Text, View } from "react-native";
-import { PageLayout, LegalSection, Card } from "@/components";
 
 const personalInfo = [
   "Email address",
@@ -60,7 +60,7 @@ export default function PrivacyPolicyPage() {
       </Text>
       <View className="mb-10">
         <Text className="text-zinc-400 text-base leading-relaxed mb-4">
-          At ResumeShift, we take your privacy seriously. This Privacy Policy
+          At Resume Pivot, we take your privacy seriously. This Privacy Policy
           explains how we collect, use, disclose, and safeguard your information
           when you use our mobile application and services.
         </Text>

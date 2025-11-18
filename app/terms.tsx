@@ -1,5 +1,5 @@
+import { Card, LegalSection, PageLayout } from "@/components";
 import { Text, View } from "react-native";
-import { PageLayout, LegalSection, Card } from "@/components";
 
 const permittedUse = [
   "Upload and analyze your resumes",
@@ -41,7 +41,7 @@ export default function TermsOfServicePage() {
       </Text>
       <View className="mb-10">
         <Text className="text-zinc-400 text-base leading-relaxed mb-4">
-          Welcome to ResumeShift! These Terms of Service ("Terms") govern your
+          Welcome to Resume Pivot! These Terms of Service ("Terms") govern your
           access to and use of our application, services, and website
           (collectively, the "Services").
         </Text>
@@ -53,8 +53,8 @@ export default function TermsOfServicePage() {
       </View>
       <LegalSection title="1. Acceptance of Terms">
         <Text className="text-zinc-400 text-base leading-relaxed">
-          By creating an account or using ResumeShift, you confirm that you are
-          at least 18 years old and have the legal capacity to enter into these
+          By creating an account or using Resume Pivot, you confirm that you are
+          have the legal capacity to enter into these
           Terms. If you are using the Services on behalf of an organization, you
           represent that you have the authority to bind that organization to
           these Terms.

@@ -9,7 +9,7 @@ export default function AboutPage() {
   return (
     <PageLayout>
       <Text className="text-white text-4xl font-bold mb-4">
-        About ResumeShift
+        About Resume Pivot
       </Text>
       <Text className="text-zinc-400 text-lg leading-relaxed mb-12">
         We believe everyone deserves a fair shot at their dream job.
@@ -17,7 +17,7 @@ export default function AboutPage() {
       <Section icon="rocket" title="Our Mission">
         <Text className="text-zinc-400 text-base leading-relaxed mb-4">
           Job hunting is hard enough without wondering if your resume is even
-          being seen. We built ResumeShift to give job seekers the clarity and
+          being seen. We built Resume Pivot to give job seekers the clarity and
           confidence they need to succeed.
         </Text>
         <Text className="text-zinc-400 text-base leading-relaxed">
@@ -29,7 +29,7 @@ export default function AboutPage() {
       </Section>
       <Section icon="book" title="Our Story">
         <Text className="text-zinc-400 text-base leading-relaxed mb-4">
-          ResumeShift was born from a simple frustration: applying to dozens of
+          Resume Pivot was born from a simple frustration: applying to dozens of
           jobs without knowing if your resume even makes it past the first
           screening.
         </Text>
@@ -55,7 +55,7 @@ export default function AboutPage() {
           </View>
           <Text className="text-zinc-400 text-sm leading-relaxed ml-8">
             We believe powerful career tools shouldn't be locked behind
-            paywalls. That's why ResumeShift is completely free.
+            paywalls. That's why Resume Pivot is completely free.
           </Text>
         </Card>
         <Card className="mb-4">
@@ -95,28 +95,16 @@ export default function AboutPage() {
           </Text>
         </Card>
       </View>
-      <Section icon="heart" title="Built by Job Seekers">
-        <Text className="text-zinc-400 text-base leading-relaxed mb-4">
-          We're a small team of engineers and designers who understand the job
-          search struggle firsthand. We've applied to hundreds of jobs, gotten
-          rejected more times than we can count, and learned what actually
-          works.
-        </Text>
-        <Text className="text-zinc-400 text-base leading-relaxed">
-          ResumeShift is the tool we wish we had when we were job hunting. Now
-          we're making it available to everyone, for free.
-        </Text>
-      </Section>
-      <Card variant="default" padding="lg" className="bg-white">
-        <Text className="text-black text-2xl font-bold mb-3">
+      <Card variant="default" padding="lg" className="bg-zinc-900 border border-zinc-800">
+        <Text className="text-white text-2xl font-bold mb-3">
           Join thousands of job seekers
         </Text>
-        <Text className="text-zinc-600 text-base mb-6 leading-relaxed">
+        <Text className="text-zinc-400 text-base mb-6 leading-relaxed">
           Start optimizing your resume today and take the guesswork out of your
           job search.
         </Text>
-        <Button className="bg-black" onPress={() => router.push("/login")}>
-          <Text className="text-white font-semibold text-base text-center">
+        <Button className="bg-white" onPress={() => router.push("/login")}>
+          <Text className="text-black font-semibold text-base text-center">
             Get started for free
           </Text>
         </Button>
