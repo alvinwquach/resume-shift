@@ -12,6 +12,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   userInterfaceStyle: "automatic",
   newArchEnabled: true,
 
+  extra: {
+    firebaseFunctionsUrl: process.env.EXPO_PUBLIC_FIREBASE_FUNCTIONS_URL,
+  },
+
   ios: { supportsTablet: true },
   android: {
     adaptiveIcon: {
@@ -23,11 +27,20 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
   },
-  web: { output: "static", favicon: "./assets/images/favicon.png" },
+  web: { 
+    output: "static", 
+    favicon: "./assets/images/favicon.png" 
+  },
 
   plugins: [
     "expo-router",
-    ["expo-env", { path: "./.env" }],               // This is the key line
+    [
+      "expo-env",
+      { 
+        path: "./.env", 
+        scheme: "all"    
+      }
+    ],
     [
       "expo-splash-screen",
       {
