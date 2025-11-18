@@ -6,6 +6,7 @@ import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, Te
 import { AnalysisResults } from "../../components/AnalysisResults";
 import { useAuth } from "../../hooks/useAuth";
 import { saveAnalysis } from "../../services/analysisService";
+import { uploadResumeToStorage } from "../../services/storageService";
 import { ResumeAnalysisResult } from "../../types/analysis";
 import { FUNCTIONS_ENDPOINTS } from "../../services/functionsConfig";
 
@@ -61,64 +62,80 @@ export default function OptimizePage() {
         };
         setMessages(prev => [...prev, userMsg]);
 
-        // Read file - handle different formats
+        // Upload file and extract text
         try {
           let text = "";
 
-          // Show extracting message
-          const extractingMsg: Message = {
+          if (!user) {
+            throw new Error("You must be logged in to upload files");
+          }
+
+          // Show uploading message
+          const uploadingMsg: Message = {
             id: (Date.now() + 1).toString(),
             role: 'assistant',
-            content: "Extracting text from your resume... This may take a moment.",
+            content: "Uploading your resume to secure storage...",
             timestamp: new Date(),
             isStreaming: true,
           };
-          setMessages(prev => [...prev, extractingMsg]);
+          setMessages(prev => [...prev, uploadingMsg]);
 
-          // Read file as base64 - works on both web and native
-          let base64 = "";
+          // Get file as blob for upload
+          let fileBlob: Blob;
 
           if (Platform.OS === 'web') {
-            // Web: use FileReader
+            // Web: use fetch to get blob
             const response = await fetch(file.uri);
-            const blob = await response.blob();
-            base64 = await new Promise<string>((resolve, reject) => {
-              const reader = new FileReader();
-              reader.onloadend = () => {
-                const result = reader.result as string;
-                const base64Data = result.split(',')[1];
-                resolve(base64Data);
-              };
-              reader.onerror = reject;
-              reader.readAsDataURL(blob);
-            });
+            fileBlob = await response.blob();
           } else {
-            // Native: use expo-file-system
-            base64 = await FileSystem.readAsStringAsync(file.uri, {
+            // Native: read file and create blob
+            const base64 = await FileSystem.readAsStringAsync(file.uri, {
               encoding: 'base64',
             });
+            const byteCharacters = atob(base64);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+              byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            fileBlob = new Blob([byteArray], { type: file.mimeType || 'application/octet-stream' });
           }
 
-          // Use AI to extract text from the file
+          console.log('Uploading file to Firebase Storage:', file.name, fileBlob.size, 'bytes');
+
+          // Upload to Firebase Storage
+          const fileUrl = await uploadResumeToStorage(user.uid, fileBlob, file.name);
+
+          console.log('File uploaded, URL:', fileUrl);
+
+          // Update message to show extraction
+          setMessages(prev => prev.map(msg =>
+            msg.id === uploadingMsg.id
+              ? { ...msg, content: "Extracting text from your resume..." }
+              : msg
+          ));
+
+          // Extract text via serverless function (downloads from Firebase Storage)
           const extractResponse = await fetch(FUNCTIONS_ENDPOINTS.EXTRACT_RESUME, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              fileData: base64,
+              fileUrl,  // Use Firebase Storage URL instead of base64
               fileName: file.name,
               mimeType: file.mimeType,
             }),
           });
 
           if (!extractResponse.ok) {
-            throw new Error("Failed to extract text from file");
+            const errorData = await extractResponse.json().catch(() => ({}));
+            throw new Error(errorData.error || "Failed to extract text from file");
           }
 
           const extractData = await extractResponse.json();
           text = extractData.text;
 
-          // Remove extracting message
-          setMessages(prev => prev.filter(msg => msg.id !== extractingMsg.id));
+          // Remove uploading message
+          setMessages(prev => prev.filter(msg => msg.id !== uploadingMsg.id));
 
           if (!text || text.trim().length === 0) {
             throw new Error("File appears to be empty");
