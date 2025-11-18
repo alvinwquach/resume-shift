@@ -18,7 +18,10 @@ function getFunctionUrl(functionName: string): string {
   }
 
   // Default to Vercel serverless functions
-  return `/api/${functionName}`;
+  // In development, Vercel dev server runs on port 3000
+  const isDev = process.env.NODE_ENV === 'development' || __DEV__;
+  const baseUrl = isDev ? 'http://localhost:3000' : '';
+  return `${baseUrl}/api/${functionName}`;
 }
 
 /**

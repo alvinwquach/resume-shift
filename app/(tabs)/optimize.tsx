@@ -104,9 +104,22 @@ export default function OptimizePage() {
           console.log('Uploading file to Firebase Storage:', file.name, fileBlob.size, 'bytes');
 
           // Upload to Firebase Storage
-          const fileUrl = await uploadResumeToStorage(user.uid, fileBlob, file.name);
+          let fileUrl: string;
+          try {
+            fileUrl = await uploadResumeToStorage(user.uid, fileBlob, file.name);
+            console.log('File uploaded, URL:', fileUrl);
+          } catch (uploadError) {
+            console.error('Firebase Storage upload failed:', uploadError);
+            throw new Error(
+              uploadError instanceof Error
+                ? `Storage upload failed: ${uploadError.message}`
+                : 'Failed to upload file to Firebase Storage. Please check your internet connection and try again.'
+            );
+          }
 
-          console.log('File uploaded, URL:', fileUrl);
+          if (!fileUrl) {
+            throw new Error('Upload succeeded but no URL was returned');
+          }
 
           // Update message to show extraction
           setMessages(prev => prev.map(msg =>
