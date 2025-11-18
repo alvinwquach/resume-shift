@@ -1,14 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
-import * as FileSystem from "expo-file-system/legacy";
-import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { AnalysisResults } from "../../components/AnalysisResults";
 import { useAuth } from "../../hooks/useAuth";
 import { saveAnalysis } from "../../services/analysisService";
-import { uploadResumeToStorage } from "../../services/storageService";
-import { ResumeAnalysisResult } from "../../types/analysis";
 import { FUNCTIONS_ENDPOINTS } from "../../services/functionsConfig";
+import { getUserResume } from "../../services/resumeService";
+import { ResumeAnalysisResult } from "../../types/analysis";
 
 type Message = {
   id: string;
@@ -21,20 +21,20 @@ type Message = {
   jobCompany?: string;
 };
 
-export default function OptimizePage() {
+export default function Optimize() {
   const { user } = useAuth();
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      role: 'assistant',
-      content: "Hi! I'm your resume optimization assistant. I'll help you analyze how well your resume matches any job posting.\n\nTo get started, please upload your resume using the button below.",
-      timestamp: new Date(),
-    }
-  ]);
+  const router = useRouter();
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [resumeFile, setResumeFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
   const [resumeText, setResumeText] = useState("");
+  const [resumeFileName, setResumeFileName] = useState("");
+  const [isLoadingResume, setIsLoadingResume] = useState(true);
+  const [manualJobMode, setManualJobMode] = useState(false);
+  const [manualJobUrl, setManualJobUrl] = useState("");
+  const [manualJobTitle, setManualJobTitle] = useState("");
+  const [manualJobCompany, setManualJobCompany] = useState("");
   const scrollViewRef = useRef<ScrollView>(null);
 
   useEffect(() => {
@@ -42,142 +42,323 @@ export default function OptimizePage() {
     scrollViewRef.current?.scrollToEnd({ animated: true });
   }, [messages]);
 
-  const handleUploadResume = async () => {
+  // Load saved resume - use useFocusEffect to reload when user returns to this tab
+  const loadSavedResume = useCallback(async () => {
+    if (!user) {
+      setIsLoadingResume(false);
+      return;
+    }
+
     try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: ["text/plain", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"],
-        copyToCacheDirectory: true,
-      });
+      console.log('Loading saved resume for user:', user.uid);
+      const savedResume = await getUserResume(user.uid);
 
-      if (!result.canceled && result.assets && result.assets.length > 0) {
-        const file = result.assets[0];
-        setResumeFile(file);
+      if (savedResume && savedResume.extractedText) {
+        // Use saved resume
+        console.log('Found saved resume:', savedResume.fileName);
+        setResumeText(savedResume.extractedText);
+        setResumeFileName(savedResume.fileName);
+        setResumeFile({
+          name: savedResume.fileName,
+          uri: savedResume.fileUrl,
+          mimeType: savedResume.mimeType,
+          size: savedResume.fileSize,
+        } as DocumentPicker.DocumentPickerAsset);
 
-        // Add user message
-        const userMsg: Message = {
-          id: Date.now().toString(),
-          role: 'user',
-          content: `📄 Uploaded: ${file.name}`,
-          timestamp: new Date(),
-        };
-        setMessages(prev => [...prev, userMsg]);
-
-        // Upload file and extract text
-        try {
-          let text = "";
-
-          if (!user) {
-            throw new Error("You must be logged in to upload files");
-          }
-
-          // Show uploading message
-          const uploadingMsg: Message = {
-            id: (Date.now() + 1).toString(),
+        // Only set welcome message if messages are empty or only have the initial message
+        if (messages.length === 0 || (messages.length === 1 && messages[0].role === 'assistant')) {
+          setMessages([{
+            id: '1',
             role: 'assistant',
-            content: "Uploading your resume to secure storage...",
+            content: `Hi! I'm your resume optimization assistant.\n\nI've loaded your saved resume: **${savedResume.fileName}**\n\nPaste a job posting URL below to analyze how well your resume matches!`,
             timestamp: new Date(),
-            isStreaming: true,
-          };
-          setMessages(prev => [...prev, uploadingMsg]);
-
-          // Get file as blob for upload
-          let fileBlob: Blob;
-
-          if (Platform.OS === 'web') {
-            // Web: use fetch to get blob
-            const response = await fetch(file.uri);
-            fileBlob = await response.blob();
-          } else {
-            // Native: read file and create blob
-            const base64 = await FileSystem.readAsStringAsync(file.uri, {
-              encoding: 'base64',
-            });
-            const byteCharacters = atob(base64);
-            const byteNumbers = new Array(byteCharacters.length);
-            for (let i = 0; i < byteCharacters.length; i++) {
-              byteNumbers[i] = byteCharacters.charCodeAt(i);
-            }
-            const byteArray = new Uint8Array(byteNumbers);
-            fileBlob = new Blob([byteArray], { type: file.mimeType || 'application/octet-stream' });
-          }
-
-          console.log('Uploading file to Firebase Storage:', file.name, fileBlob.size, 'bytes');
-
-          // Upload to Firebase Storage
-          let fileUrl: string;
-          try {
-            fileUrl = await uploadResumeToStorage(user.uid, fileBlob, file.name);
-            console.log('File uploaded, URL:', fileUrl);
-          } catch (uploadError) {
-            console.error('Firebase Storage upload failed:', uploadError);
-            throw new Error(
-              uploadError instanceof Error
-                ? `Storage upload failed: ${uploadError.message}`
-                : 'Failed to upload file to Firebase Storage. Please check your internet connection and try again.'
-            );
-          }
-
-          if (!fileUrl) {
-            throw new Error('Upload succeeded but no URL was returned');
-          }
-
-          // Update message to show extraction
-          setMessages(prev => prev.map(msg =>
-            msg.id === uploadingMsg.id
-              ? { ...msg, content: "Extracting text from your resume..." }
-              : msg
-          ));
-
-          // Extract text via serverless function (downloads from Firebase Storage)
-          const extractResponse = await fetch(FUNCTIONS_ENDPOINTS.EXTRACT_RESUME, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              fileUrl,  // Use Firebase Storage URL instead of base64
-              fileName: file.name,
-              mimeType: file.mimeType,
-            }),
-          });
-
-          if (!extractResponse.ok) {
-            const errorData = await extractResponse.json().catch(() => ({}));
-            throw new Error(errorData.error || "Failed to extract text from file");
-          }
-
-          const extractData = await extractResponse.json();
-          text = extractData.text;
-
-          // Remove uploading message
-          setMessages(prev => prev.filter(msg => msg.id !== uploadingMsg.id));
-
-          if (!text || text.trim().length === 0) {
-            throw new Error("File appears to be empty");
-          }
-
-          setResumeText(text);
-
-          // Add assistant response
-          const assistantMsg: Message = {
-            id: (Date.now() + 1).toString(),
+          }]);
+        }
+      } else {
+        // No saved resume
+        console.log('No saved resume found');
+        if (messages.length === 0 || (messages.length === 1 && messages[0].role === 'assistant')) {
+          setMessages([{
+            id: '1',
             role: 'assistant',
-            content: `Perfect! I've extracted the text from your resume.\n\nNow, please paste the job posting URL you'd like to analyze against.`,
+            content: "Hi! I'm your resume optimization assistant.\n\nIt looks like you haven't uploaded a resume yet. Please go to the Dashboard tab to upload your resume first, then come back here to analyze job postings!",
             timestamp: new Date(),
-          };
-          setMessages(prev => [...prev, assistantMsg]);
-        } catch (error) {
-          console.error("Error reading file:", error);
-          const errorMsg: Message = {
-            id: (Date.now() + 1).toString(),
-            role: 'assistant',
-            content: `I had trouble reading that file. ${error instanceof Error ? error.message : 'Please try uploading a different file.'}\n\nSupported formats: TXT, DOCX\n\n💡 If you have a PDF, please convert it to DOCX or TXT first.`,
-            timestamp: new Date(),
-          };
-          setMessages(prev => [...prev, errorMsg]);
-          setResumeFile(null);
+          }]);
         }
       }
     } catch (error) {
-      console.error("Error picking document:", error);
+      console.error("Error loading saved resume:", error);
+      if (messages.length === 0 || (messages.length === 1 && messages[0].role === 'assistant')) {
+        setMessages([{
+          id: '1',
+          role: 'assistant',
+          content: "Hi! I'm your resume optimization assistant.\n\nPlease upload your resume on the Dashboard tab to get started.",
+          timestamp: new Date(),
+        }]);
+      }
+    } finally {
+      setIsLoadingResume(false);
+    }
+  }, [user, messages.length]);
+
+  // Reload resume whenever the tab gains focus
+  useFocusEffect(
+    useCallback(() => {
+      console.log('Optimize page focused, reloading resume...');
+      loadSavedResume();
+    }, [loadSavedResume])
+  );
+
+
+  const handleManualJobDescription = async (userInput: string) => {
+    setIsLoading(true);
+
+    const streamingMsg: Message = {
+      id: (Date.now() + 1).toString(),
+      role: 'assistant',
+      content: "Analyzing your resume against the job description...",
+      timestamp: new Date(),
+      isStreaming: true,
+    };
+    setMessages(prev => [...prev, streamingMsg]);
+
+    try {
+      // Parse the input to extract job title, company, and description
+      // Try multiple formats
+      let jobTitle = '';
+      let company = '';
+      let jobDescription = userInput;
+
+      const lines = userInput.split('\n').filter(line => line.trim().length > 0);
+
+      console.log('[Manual Job] Input received:', {
+        totalLength: userInput.length,
+        lineCount: lines.length,
+        firstLine: lines[0]?.substring(0, 200),
+        secondLine: lines[1]?.substring(0, 200),
+        thirdLine: lines[2]?.substring(0, 200)
+      });
+
+      if (lines.length > 0) {
+        const firstLine = lines[0].trim();
+        const secondLine = lines.length > 1 ? lines[1].trim() : '';
+
+        // Format 1: "Job Title at Company"
+        const atMatch = firstLine.match(/^(.+?)\s+at\s+(.+)$/i);
+        if (atMatch) {
+          jobTitle = atMatch[1].trim();
+          company = atMatch[2].trim();
+          jobDescription = lines.slice(1).join('\n').trim();
+          console.log('[Manual Job] Matched format 1: "Title at Company"');
+        }
+        // Format 2: "Company - Job Title"
+        else if (firstLine.includes('-') || firstLine.includes('–') || firstLine.includes('—')) {
+          const dashMatch = firstLine.match(/^(.+?)\s*[-–—]\s*(.+)$/);
+          if (dashMatch) {
+            company = dashMatch[1].trim();
+            jobTitle = dashMatch[2].trim();
+            jobDescription = lines.slice(1).join('\n').trim();
+            console.log('[Manual Job] Matched format 2: "Company - Title"');
+          }
+        }
+        // Format 3: First line is title, second line is company
+        else if (secondLine.length > 0 && secondLine.length < 100 && !secondLine.toLowerCase().includes('responsibilities') && !secondLine.toLowerCase().includes('requirements')) {
+          jobTitle = firstLine;
+          // Clean up common prefixes from company name
+          let cleanedCompany = secondLine
+            .replace(/^(job category|category|company|location|posted by)\s*[:|\t]\s*/i, '')
+            .trim();
+
+          // If the company name contains multiple parts (e.g., "Tesla AI"), extract just the first part (company name)
+          // Common patterns: "Tesla AI", "Google Cloud", "Meta Reality Labs", etc.
+          const companyMatch = cleanedCompany.match(/^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+[A-Z]/);
+          if (companyMatch) {
+            company = companyMatch[1].trim();
+          } else {
+            company = cleanedCompany.split(/\s+(AI|Cloud|Labs|Team|Group|Division|Department)/i)[0].trim();
+          }
+
+          jobDescription = lines.slice(2).join('\n').trim();
+          console.log('[Manual Job] Matched format 3: Separate lines, cleaned company:', company);
+        }
+        // Format 4: Just use first line as title (if it looks like a title)
+        else if (firstLine.length < 150) {
+          jobTitle = firstLine;
+          jobDescription = lines.slice(1).join('\n').trim();
+          console.log('[Manual Job] Matched format 4: First line as title');
+        }
+      }
+
+      // Try to extract from URL if we still don't have a job title and we have a manual job URL
+      if (!jobTitle && manualJobUrl) {
+        const urlParts = manualJobUrl.split('/').filter(part => part.length > 0);
+        const lastPart = urlParts[urlParts.length - 1];
+        if (lastPart && lastPart.length > 5) {
+          // Convert URL slug to title case (e.g., "fullstack-software-engineer" -> "Fullstack Software Engineer")
+          jobTitle = lastPart
+            .split(/[-_]/)
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ')
+            .replace(/\d+/g, '')
+            .trim();
+          console.log('[Manual Job] Extracted title from URL:', jobTitle);
+        }
+      }
+
+      // Default fallback
+      if (!jobTitle || jobTitle.length === 0) {
+        jobTitle = 'Job Application';
+        jobDescription = userInput;
+        console.log('[Manual Job] Using fallback title');
+      }
+
+      console.log('[Manual Job] Final parsed result:', {
+        jobTitle,
+        company,
+        descriptionLength: jobDescription.length
+      });
+
+      const analysisResponse = await fetch(FUNCTIONS_ENDPOINTS.ANALYZE_STREAM, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          resumeText,
+          jobDescription,
+        }),
+      });
+
+      if (!analysisResponse.ok) {
+        throw new Error("Failed to analyze resume");
+      }
+
+      console.log('Analysis response received, starting to read stream...');
+
+      const reader = analysisResponse.body?.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let partialResult: Partial<ResumeAnalysisResult> = {};
+
+      if (reader) {
+        setMessages(prev => prev.map(msg =>
+          msg.id === streamingMsg.id
+            ? {
+                ...msg,
+                analysisResult: {},
+                isStreaming: true,
+                content: '',
+                jobTitle: jobTitle,
+                jobCompany: company || undefined
+              }
+            : msg
+        ));
+
+        while (true) {
+          const { done, value } = await reader.read();
+
+          if (done) {
+            console.log('Stream complete!');
+            break;
+          }
+
+          const chunk = decoder.decode(value, { stream: true });
+          buffer += chunk;
+
+          try {
+            const jsonMatch = buffer.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+              const potentialJson = jsonMatch[0];
+
+              try {
+                const parsed = JSON.parse(potentialJson) as Partial<ResumeAnalysisResult>;
+
+                const hasNewData = Object.keys(parsed).some(key => {
+                  const typedKey = key as keyof ResumeAnalysisResult;
+                  return JSON.stringify(parsed[typedKey]) !== JSON.stringify(partialResult[typedKey]);
+                });
+
+                if (hasNewData) {
+                  partialResult = { ...partialResult, ...parsed };
+                  console.log('Updated partial result:', Object.keys(partialResult));
+
+                  setMessages(prev => prev.map(msg =>
+                    msg.id === streamingMsg.id
+                      ? {
+                          ...msg,
+                          analysisResult: partialResult,
+                          isStreaming: true,
+                          content: '',
+                          jobTitle: jobTitle,
+                          jobCompany: company || undefined
+                        }
+                      : msg
+                  ));
+                }
+              } catch (parseError) {
+              }
+            }
+          } catch (e) {
+          }
+        }
+
+        // Final update - mark as complete
+        setMessages(prev => prev.map(msg =>
+          msg.id === streamingMsg.id
+            ? { ...msg, isStreaming: false }
+            : msg
+        ));
+
+        // Save to Firebase with final result
+        if (user && partialResult) {
+          try {
+            console.log('[Save Analysis] Preparing to save manual job to Firestore:', {
+              jobUrl: manualJobUrl,
+              jobTitle: jobTitle,
+              company: company || undefined,
+              score: partialResult.compatibilityScore,
+              resumeFile: resumeFile?.name
+            });
+
+            const analysisId = await saveAnalysis(
+              user.uid,
+              manualJobUrl,
+              jobTitle || undefined,
+              company || undefined,
+              resumeFile?.name || '',
+              partialResult as ResumeAnalysisResult
+            );
+
+            console.log('Analysis saved successfully with ID:', analysisId);
+
+            // Reset manual mode
+            setManualJobMode(false);
+            setManualJobUrl("");
+            setManualJobTitle("");
+            setManualJobCompany("");
+          } catch (saveError) {
+            console.error("Failed to save analysis:", saveError);
+            Alert.alert("Warning", "Analysis completed but failed to save to history");
+          }
+        }
+      } else {
+        console.error('No reader available!');
+      }
+    } catch (error) {
+      console.error("Manual analysis error:", error);
+      const errorMessage = error instanceof Error
+        ? error.message
+        : "Sorry, I encountered an error analyzing the job description.";
+
+      setMessages(prev => prev.map(msg =>
+        msg.id === streamingMsg.id
+          ? {
+              ...msg,
+              content: errorMessage,
+              isStreaming: false
+            }
+          : msg
+      ));
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -205,6 +386,12 @@ export default function OptimizePage() {
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, errorMsg]);
+      return;
+    }
+
+    // If in manual job mode, treat the message as job description
+    if (manualJobMode) {
+      await handleManualJobDescription(userMessage);
       return;
     }
 
@@ -240,16 +427,36 @@ export default function OptimizePage() {
       });
 
       if (!jobResponse.ok) {
-        throw new Error("Failed to fetch job posting");
+        const errorData = await jobResponse.json().catch(() => ({ error: 'Failed to fetch job posting' }));
+        throw new Error(errorData.error || "Failed to fetch job posting");
       }
 
       const jobData = await jobResponse.json();
+
+      // Check if job description is too short (likely an error)
+      if (!jobData.description || jobData.description.length < 200) {
+        throw new Error("The job posting could not be accessed. This website may block automated access. Please try a different job posting.");
+      }
+
+      console.log('[Job Fetch] Job data retrieved:', {
+        title: jobData.title,
+        company: jobData.company,
+        descriptionLength: jobData.description?.length || 0,
+        descriptionPreview: jobData.description?.substring(0, 200) || 'N/A'
+      });
 
       setMessages(prev => prev.map(msg =>
         msg.id === streamingMsg.id
           ? { ...msg, content: `Found the job posting: ${jobData.title || 'Job'} at ${jobData.company || 'Company'}\n\nAnalyzing your resume match...` }
           : msg
       ));
+
+      console.log('[Analysis Request] Sending analysis request:', {
+        endpoint: FUNCTIONS_ENDPOINTS.ANALYZE_STREAM,
+        resumeTextLength: resumeText.length,
+        jobDescriptionLength: jobData.description?.length || 0,
+        jobDescriptionPreview: jobData.description?.substring(0, 200) || 'N/A'
+      });
 
       const analysisResponse = await fetch(FUNCTIONS_ENDPOINTS.ANALYZE_STREAM, {
         method: "POST",
@@ -346,7 +553,18 @@ export default function OptimizePage() {
         // Save to Firebase with final result
         if (user && partialResult) {
           try {
-            await saveAnalysis(
+            console.log('[Save Analysis] Preparing to save to Firestore:', {
+              jobUrl: userMessage,
+              jobTitle: jobData.title,
+              company: jobData.company,
+              score: partialResult.compatibilityScore,
+              resumeFile: resumeFile.name,
+              hasProjectRecommendations: !!partialResult.projectRecommendations,
+              projectCount: partialResult.projectRecommendations?.length || 0,
+              firstProjectTitle: partialResult.projectRecommendations?.[0]?.title || 'N/A'
+            });
+
+            const analysisId = await saveAnalysis(
               user.uid,
               userMessage,
               jobData.title,
@@ -354,9 +572,18 @@ export default function OptimizePage() {
               resumeFile.name,
               partialResult as ResumeAnalysisResult
             );
+
+            console.log('Analysis saved successfully with ID:', analysisId);
           } catch (saveError) {
             console.error("Failed to save analysis:", saveError);
+            Alert.alert("Warning", "Analysis completed but failed to save to history");
           }
+        } else {
+          console.warn('Not saving analysis - missing user or result:', {
+            hasUser: !!user,
+            hasResult: !!partialResult,
+            resultKeys: partialResult ? Object.keys(partialResult) : []
+          });
         }
       } else {
         console.error('No reader available!');
@@ -364,15 +591,40 @@ export default function OptimizePage() {
 
     } catch (error) {
       console.error("Analysis error:", error);
-      setMessages(prev => prev.map(msg =>
-        msg.id === streamingMsg.id
-          ? {
-              ...msg,
-              content: "Sorry, I encountered an error analyzing that job posting. Please check the URL and try again.",
-              isStreaming: false
-            }
-          : msg
-      ));
+      const errorMessage = error instanceof Error
+        ? error.message
+        : "Sorry, I encountered an error analyzing that job posting. Please check the URL and try again.";
+
+      // Check if it's a scraping/access error
+      const isScrapingError = errorMessage.includes("could not be accessed") ||
+                              errorMessage.includes("block") ||
+                              errorMessage.includes("denied");
+
+      if (isScrapingError) {
+        // Offer manual paste option
+        setManualJobMode(true);
+        setManualJobUrl(userMessage);
+
+        setMessages(prev => prev.map(msg =>
+          msg.id === streamingMsg.id
+            ? {
+                ...msg,
+                content: `${errorMessage}\n\n💡 **Alternative**: You can manually paste the job description instead.\n\nPlease provide the following information:\n1. Job title\n2. Company name\n3. Full job description\n\nFormat: [Job Title] at [Company]\n[Job Description]`,
+                isStreaming: false
+              }
+            : msg
+        ));
+      } else {
+        setMessages(prev => prev.map(msg =>
+          msg.id === streamingMsg.id
+            ? {
+                ...msg,
+                content: errorMessage,
+                isStreaming: false
+              }
+            : msg
+        ));
+      }
     } finally {
       setIsLoading(false);
     }
@@ -469,39 +721,23 @@ export default function OptimizePage() {
       </ScrollView>
       <View className="px-4 pb-6 border-t border-zinc-800/50 bg-black/95" style={{ paddingBottom: Platform.OS === "web" ? 24 : 32 }}>
         <View className="flex-row items-center mt-4">
-          <TouchableOpacity
-            onPress={handleUploadResume}
-            className="w-10 h-10 rounded-full items-center justify-center bg-zinc-800/60 mr-2 active:opacity-70"
-            disabled={isLoading}
-            activeOpacity={0.7}
-          >
-            <Ionicons
-              name={resumeFile ? "document-attach" : "attach-outline"}
-              size={20}
-              color={resumeFile ? "#3b82f6" : "#71717a"}
-            />
-          </TouchableOpacity>
           <View className={`flex-1 rounded-3xl mr-2 ${
             resumeFile
               ? 'bg-zinc-900/80 border border-zinc-800/60'
               : 'bg-zinc-900/40 border border-zinc-800/40'
           }`}>
             {!resumeFile ? (
-              <TouchableOpacity
-                onPress={handleUploadResume}
-                className="px-4 py-3 flex-row items-center"
-                activeOpacity={0.7}
-              >
-                <Ionicons name="cloud-upload-outline" size={16} color="#3b82f6" />
+              <View className="px-4 py-3 flex-row items-center">
+                <Ionicons name="alert-circle-outline" size={16} color="#71717a" />
                 <Text className="text-zinc-500 text-sm ml-2">
-                  Upload resume to get started
+                  Upload resume on Dashboard to get started
                 </Text>
-              </TouchableOpacity>
+              </View>
             ) : (
               <TextInput
                 value={inputText}
                 onChangeText={setInputText}
-                placeholder="Paste job posting URL..."
+                placeholder={manualJobMode ? "Paste job description text..." : "Paste job posting URL..."}
                 placeholderTextColor="#71717a"
                 className="text-white text-sm px-4"
                 style={{
@@ -515,6 +751,16 @@ export default function OptimizePage() {
                 editable={!isLoading}
                 onSubmitEditing={handleSendMessage}
                 returnKeyType="send"
+                onKeyPress={(e) => {
+                  // On web, handle Enter key to submit (Shift+Enter for new line)
+                  if (Platform.OS === 'web' && e.nativeEvent.key === 'Enter') {
+                    const nativeEvent = e.nativeEvent as any;
+                    if (!nativeEvent.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }
+                  }
+                }}
               />
             )}
           </View>
@@ -539,21 +785,6 @@ export default function OptimizePage() {
           <View className="flex-row items-center mt-3 px-2 py-2 bg-green-500/10 border border-green-500/20 rounded-xl">
             <Ionicons name="checkmark-circle" size={18} color="#22c55e" />
             <Text className="text-green-400 text-sm ml-2 flex-1 font-medium">{resumeFile.name}</Text>
-            <TouchableOpacity
-              onPress={() => {
-                setResumeFile(null);
-                setResumeText("");
-                setMessages([{
-                  id: Date.now().toString(),
-                  role: 'assistant',
-                  content: "Resume removed. Please upload a new resume to continue.",
-                  timestamp: new Date(),
-                }]);
-              }}
-              className="ml-2 p-1"
-            >
-              <Ionicons name="close-circle" size={20} color="#ef4444" />
-            </TouchableOpacity>
           </View>
         )}
       </View>

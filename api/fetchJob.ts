@@ -31,6 +31,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Use Jina AI Reader to fetch and render the page (handles JavaScript)
     // This is a free service that renders JS and returns clean text
     const jinaUrl = `https://r.jina.ai/${jobUrl}`;
+    console.log('[fetchJob] Fetching from Jina AI:', jinaUrl);
+
     const response = await fetch(jinaUrl, {
       headers: {
         'Accept': 'application/json',
@@ -43,6 +45,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const pageText = await response.text();
+    console.log('[fetchJob] Jina AI response length:', pageText.length);
+    console.log('[fetchJob] First 500 chars:', pageText.substring(0, 500));
+
+    // Check if Jina returned an error/blocked message
+    if (pageText.includes('Access to the specific job description is denied') ||
+        pageText.includes('Unable to access') ||
+        pageText.length < 200) {
+      throw new Error('The job posting page could not be accessed. It may be behind authentication or blocking automated access. Please try copying and pasting the job description manually.');
+    }
 
     // Use AI to extract job posting information from the rendered page text
     const result = await generateText({
