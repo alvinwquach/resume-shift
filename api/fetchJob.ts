@@ -1,30 +1,31 @@
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { openai } from '@ai-sdk/openai';
 import { generateText } from 'ai';
 
 /**
- * API endpoint to fetch job posting content from a URL using AI
+ * Vercel Serverless Function to fetch job posting content from a URL using AI
  * This uses AI to extract job information from the URL
  */
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
+  }
 
-export async function POST(request: Request) {
   try {
-    const { jobUrl } = await request.json();
+    const { jobUrl } = req.body;
 
     if (!jobUrl) {
-      return new Response(
-        JSON.stringify({ error: 'Missing jobUrl parameter' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
+      res.status(400).json({ error: 'Missing jobUrl parameter' });
+      return;
     }
 
     // Validate URL
     try {
       new URL(jobUrl);
     } catch {
-      return new Response(
-        JSON.stringify({ error: 'Invalid URL format' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
+      res.status(400).json({ error: 'Invalid URL format' });
+      return;
     }
 
     // Use Jina AI Reader to fetch and render the page (handles JavaScript)
@@ -72,15 +73,11 @@ Return ONLY valid JSON, no additional text.`,
 
     const jobData = JSON.parse(jsonMatch[0]);
 
-    return new Response(
-      JSON.stringify(jobData),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
-    );
+    res.status(200).json(jobData);
   } catch (error) {
     console.error('Error fetching job posting:', error);
-    return new Response(
-      JSON.stringify({ error: 'Failed to fetch job posting. Please check the URL and try again.' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
+    res.status(500).json({
+      error: 'Failed to fetch job posting. Please check the URL and try again.'
+    });
   }
 }

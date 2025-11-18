@@ -1,59 +1,7 @@
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-
-
-export async function POST(request: Request) {
-  try {
-    const {
-      email,
-      jobTitle,
-      jobCompany,
-      resumeFileName,
-      analysisResult
-    } = await request.json();
-
-    if (!email || !analysisResult) {
-      return new Response(
-        JSON.stringify({ error: 'Missing required fields: email and analysisResult' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const htmlContent = generateEmailHTML({
-      jobTitle,
-      jobCompany,
-      resumeFileName,
-      analysisResult
-    });
-
-    const { data, error } = await resend.emails.send({
-      from: 'Resume Optimizer <onboarding@resend.dev>',
-      to: [email],
-      subject: `Resume Analysis: ${jobTitle || 'Job Position'}${jobCompany ? ` at ${jobCompany}` : ''}`,
-      html: htmlContent,
-    });
-
-    if (error) {
-      console.error('Resend error:', error);
-      return new Response(
-        JSON.stringify({ error: 'Failed to send email' }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
-
-    return new Response(
-      JSON.stringify({ success: true, messageId: data?.id }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
-    );
-  } catch (error) {
-    console.error('Email sending error:', error);
-    return new Response(
-      JSON.stringify({ error: 'Failed to send email' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
-  }
-}
 
 interface EmailParams {
   jobTitle?: string;
@@ -82,6 +30,58 @@ interface EmailParams {
     formattingTips?: string[];
     overallFeedback?: string;
   };
+}
+
+/**
+ * Vercel Serverless Function to send resume analysis via email
+ */
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
+  }
+
+  try {
+    const {
+      email,
+      jobTitle,
+      jobCompany,
+      resumeFileName,
+      analysisResult
+    } = req.body;
+
+    if (!email || !analysisResult) {
+      res.status(400).json({
+        error: 'Missing required fields: email and analysisResult'
+      });
+      return;
+    }
+
+    const htmlContent = generateEmailHTML({
+      jobTitle,
+      jobCompany,
+      resumeFileName,
+      analysisResult
+    });
+
+    const { data, error } = await resend.emails.send({
+      from: 'Resume Optimizer <onboarding@resend.dev>',
+      to: [email],
+      subject: `Resume Analysis: ${jobTitle || 'Job Position'}${jobCompany ? ` at ${jobCompany}` : ''}`,
+      html: htmlContent,
+    });
+
+    if (error) {
+      console.error('Resend error:', error);
+      res.status(500).json({ error: 'Failed to send email' });
+      return;
+    }
+
+    res.status(200).json({ success: true, messageId: data?.id });
+  } catch (error) {
+    console.error('Email sending error:', error);
+    res.status(500).json({ error: 'Failed to send email' });
+  }
 }
 
 function generateEmailHTML(params: EmailParams): string {
