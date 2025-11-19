@@ -46,7 +46,6 @@ export default function FeaturesPage() {
       <Text className="text-zinc-400 text-lg leading-relaxed mb-12">
         Everything you need to pivot your resume and land your dream job.
       </Text>
-
       <View className="flex-row flex-wrap -mx-2">
         <View className="w-1/2 px-2">
           <Section
