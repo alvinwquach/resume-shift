@@ -8,12 +8,13 @@ import { AnalyticsCharts } from "../../components/dashboard/AnalyticsCharts";
 import { ApplicationsList } from "../../components/dashboard/ApplicationsList";
 import { DashboardStats } from "../../components/dashboard/DashboardStats";
 import { FeatureHighlights } from "../../components/dashboard/FeatureHighlights";
-import { ResumeUploadSection } from "../../components/dashboard/ResumeUploadSection";
+import { ResumeVersionManager } from "../../components/dashboard/ResumeVersionManager";
+import { ResumeVersionPerformance } from "../../components/dashboard/ResumeVersionPerformance";
 import { TimeBasedTrends } from "../../components/dashboard/TimeBasedTrends";
 import { TrendingBanner } from "../../components/dashboard/TrendingBanner";
 import { useAuth } from "../../hooks/useAuth";
 import { useUserAnalyses } from "../../hooks/useUserAnalyses";
-import { useUserResume } from "../../hooks/useUserResume";
+import { useUserResumes } from "../../hooks/useUserResumes";
 import { logout } from "../../services/auth";
 import { SavedAnalysis } from "../../types/analysis";
 
@@ -21,14 +22,14 @@ export default function Dashboard() {
   const router = useRouter();
   const { user } = useAuth();
   const { data: analyses = [], isLoading, refetch } = useUserAnalyses(user?.uid);
-  const { resume, isLoading: isLoadingResume, uploadResume, isUploading, deleteResume, refetch: refetchResume } = useUserResume(user?.uid);
+  const { resumes, isLoading: isLoadingResumes, refetch: refetchResumes } = useUserResumes(user?.uid);
   const [selectedAnalysis, setSelectedAnalysis] = useState<SavedAnalysis | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await Promise.all([refetch(), refetchResume()]);
+    await Promise.all([refetch(), refetchResumes()]);
     setIsRefreshing(false);
   };
 
@@ -47,7 +48,7 @@ export default function Dashboard() {
     setModalVisible(true);
   };
 
-  if (isLoading || isLoadingResume) {
+  if (isLoading || isLoadingResumes) {
     return (
       <View className="flex-1 bg-[#0A0A0A] items-center justify-center">
         <ActivityIndicator size="large" color="#3b82f6" />
@@ -86,18 +87,12 @@ export default function Dashboard() {
             </TouchableOpacity>
           </View>
         </View>
-        {user && (
-          <ResumeUploadSection
-            resume={resume}
-            isUploading={isUploading}
-            onUpload={uploadResume}
-            onDelete={deleteResume}
-            userId={user.uid}
-          />
-        )}
+        {/* Resume Version Manager */}
+        {user && <ResumeVersionManager userId={user.uid} />}
         {analyses.length === 0 && <FeatureHighlights />}
         <DashboardStats analyses={analyses} />
         <TrendingBanner analyses={analyses} />
+        {analyses.length > 0 && <ResumeVersionPerformance analyses={analyses} />}
         {analyses.length > 0 && <AnalyticsCharts analyses={analyses} />}
         {analyses.length >= 2 && <TimeBasedTrends analyses={analyses} />}
         {analyses.length > 0 && <ActionableInsights analyses={analyses} />}

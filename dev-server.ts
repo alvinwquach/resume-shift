@@ -11,7 +11,7 @@ import analyzeStreamHandler from './api/analyzeStream';
 import fetchJobHandler from './api/fetchJob';
 import sendEmailHandler from './api/sendEmail';
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3001;
 
 const server = http.createServer(async (req, res) => {
   const parsedUrl = url.parse(req.url || '', true);

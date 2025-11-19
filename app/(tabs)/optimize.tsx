@@ -1,105 +1,43 @@
 import { Ionicons } from "@expo/vector-icons";
-import * as DocumentPicker from "expo-document-picker";
-import { useFocusEffect, useRouter } from "expo-router";
+import { useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { AnalysisResults } from "../../components/AnalysisResults";
 import { useAuth } from "../../hooks/useAuth";
-import { saveAnalysis } from "../../services/analysisService";
-import { FUNCTIONS_ENDPOINTS } from "../../services/functionsConfig";
-import { getUserResume } from "../../services/resumeService";
+import { useResumeLoader } from "../../hooks/useResumeLoader";
+import { useResumeAnalysis } from "../../hooks/useResumeAnalysis";
 import { ResumeAnalysisResult } from "../../types/analysis";
-
-type Message = {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: Date;
-  isStreaming?: boolean;
-  analysisResult?: Partial<ResumeAnalysisResult>;
-  jobTitle?: string;
-  jobCompany?: string;
-};
+import { Message } from "../../types/message";
 
 export default function Optimize() {
   const { user } = useAuth();
-  const router = useRouter();
-  const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [resumeFile, setResumeFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
-  const [resumeText, setResumeText] = useState("");
-  const [resumeFileName, setResumeFileName] = useState("");
-  const [isLoadingResume, setIsLoadingResume] = useState(true);
-  const [manualJobMode, setManualJobMode] = useState(false);
-  const [manualJobUrl, setManualJobUrl] = useState("");
-  const [manualJobTitle, setManualJobTitle] = useState("");
-  const [manualJobCompany, setManualJobCompany] = useState("");
+  const [selectedResumeId, setSelectedResumeId] = useState<string | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
 
+  // Load resume data
+  const {
+    resumeFile,
+    resumeText,
+    allResumes,
+    isLoadingResume,
+    messages,
+    setMessages,
+    loadSavedResume,
+  } = useResumeLoader(user?.uid, selectedResumeId, 0);
+
+  // Analysis logic
+  const {
+    isLoading,
+    manualJobMode,
+    analyzeManualJob,
+    analyzeJobUrl,
+  } = useResumeAnalysis(user?.uid, resumeText, resumeFile, allResumes, selectedResumeId);
+
+  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    // Auto-scroll to bottom when new messages arrive
     scrollViewRef.current?.scrollToEnd({ animated: true });
   }, [messages]);
-
-  // Load saved resume - use useFocusEffect to reload when user returns to this tab
-  const loadSavedResume = useCallback(async () => {
-    if (!user) {
-      setIsLoadingResume(false);
-      return;
-    }
-
-    try {
-      console.log('Loading saved resume for user:', user.uid);
-      const savedResume = await getUserResume(user.uid);
-
-      if (savedResume && savedResume.extractedText) {
-        // Use saved resume
-        console.log('Found saved resume:', savedResume.fileName);
-        setResumeText(savedResume.extractedText);
-        setResumeFileName(savedResume.fileName);
-        setResumeFile({
-          name: savedResume.fileName,
-          uri: savedResume.fileUrl,
-          mimeType: savedResume.mimeType,
-          size: savedResume.fileSize,
-        } as DocumentPicker.DocumentPickerAsset);
-
-        // Only set welcome message if messages are empty or only have the initial message
-        if (messages.length === 0 || (messages.length === 1 && messages[0].role === 'assistant')) {
-          setMessages([{
-            id: '1',
-            role: 'assistant',
-            content: `Hi! I'm your resume optimization assistant.\n\nI've loaded your saved resume: **${savedResume.fileName}**\n\nPaste a job posting URL below to analyze how well your resume matches!`,
-            timestamp: new Date(),
-          }]);
-        }
-      } else {
-        // No saved resume
-        console.log('No saved resume found');
-        if (messages.length === 0 || (messages.length === 1 && messages[0].role === 'assistant')) {
-          setMessages([{
-            id: '1',
-            role: 'assistant',
-            content: "Hi! I'm your resume optimization assistant.\n\nIt looks like you haven't uploaded a resume yet. Please go to the Dashboard tab to upload your resume first, then come back here to analyze job postings!",
-            timestamp: new Date(),
-          }]);
-        }
-      }
-    } catch (error) {
-      console.error("Error loading saved resume:", error);
-      if (messages.length === 0 || (messages.length === 1 && messages[0].role === 'assistant')) {
-        setMessages([{
-          id: '1',
-          role: 'assistant',
-          content: "Hi! I'm your resume optimization assistant.\n\nPlease upload your resume on the Dashboard tab to get started.",
-          timestamp: new Date(),
-        }]);
-      }
-    } finally {
-      setIsLoadingResume(false);
-    }
-  }, [user, messages.length]);
 
   // Reload resume whenever the tab gains focus
   useFocusEffect(
@@ -108,259 +46,6 @@ export default function Optimize() {
       loadSavedResume();
     }, [loadSavedResume])
   );
-
-
-  const handleManualJobDescription = async (userInput: string) => {
-    setIsLoading(true);
-
-    const streamingMsg: Message = {
-      id: (Date.now() + 1).toString(),
-      role: 'assistant',
-      content: "Analyzing your resume against the job description...",
-      timestamp: new Date(),
-      isStreaming: true,
-    };
-    setMessages(prev => [...prev, streamingMsg]);
-
-    try {
-      // Parse the input to extract job title, company, and description
-      // Try multiple formats
-      let jobTitle = '';
-      let company = '';
-      let jobDescription = userInput;
-
-      const lines = userInput.split('\n').filter(line => line.trim().length > 0);
-
-      console.log('[Manual Job] Input received:', {
-        totalLength: userInput.length,
-        lineCount: lines.length,
-        firstLine: lines[0]?.substring(0, 200),
-        secondLine: lines[1]?.substring(0, 200),
-        thirdLine: lines[2]?.substring(0, 200)
-      });
-
-      if (lines.length > 0) {
-        const firstLine = lines[0].trim();
-        const secondLine = lines.length > 1 ? lines[1].trim() : '';
-
-        // Format 1: "Job Title at Company"
-        const atMatch = firstLine.match(/^(.+?)\s+at\s+(.+)$/i);
-        if (atMatch) {
-          jobTitle = atMatch[1].trim();
-          company = atMatch[2].trim();
-          jobDescription = lines.slice(1).join('\n').trim();
-          console.log('[Manual Job] Matched format 1: "Title at Company"');
-        }
-        // Format 2: "Company - Job Title"
-        else if (firstLine.includes('-') || firstLine.includes('–') || firstLine.includes('—')) {
-          const dashMatch = firstLine.match(/^(.+?)\s*[-–—]\s*(.+)$/);
-          if (dashMatch) {
-            company = dashMatch[1].trim();
-            jobTitle = dashMatch[2].trim();
-            jobDescription = lines.slice(1).join('\n').trim();
-            console.log('[Manual Job] Matched format 2: "Company - Title"');
-          }
-        }
-        // Format 3: First line is title, second line is company
-        else if (secondLine.length > 0 && secondLine.length < 100 && !secondLine.toLowerCase().includes('responsibilities') && !secondLine.toLowerCase().includes('requirements')) {
-          jobTitle = firstLine;
-          // Clean up common prefixes from company name
-          let cleanedCompany = secondLine
-            .replace(/^(job category|category|company|location|posted by)\s*[:|\t]\s*/i, '')
-            .trim();
-
-          // If the company name contains multiple parts (e.g., "Tesla AI"), extract just the first part (company name)
-          // Common patterns: "Tesla AI", "Google Cloud", "Meta Reality Labs", etc.
-          const companyMatch = cleanedCompany.match(/^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+[A-Z]/);
-          if (companyMatch) {
-            company = companyMatch[1].trim();
-          } else {
-            company = cleanedCompany.split(/\s+(AI|Cloud|Labs|Team|Group|Division|Department)/i)[0].trim();
-          }
-
-          jobDescription = lines.slice(2).join('\n').trim();
-          console.log('[Manual Job] Matched format 3: Separate lines, cleaned company:', company);
-        }
-        // Format 4: Just use first line as title (if it looks like a title)
-        else if (firstLine.length < 150) {
-          jobTitle = firstLine;
-          jobDescription = lines.slice(1).join('\n').trim();
-          console.log('[Manual Job] Matched format 4: First line as title');
-        }
-      }
-
-      // Try to extract from URL if we still don't have a job title and we have a manual job URL
-      if (!jobTitle && manualJobUrl) {
-        const urlParts = manualJobUrl.split('/').filter(part => part.length > 0);
-        const lastPart = urlParts[urlParts.length - 1];
-        if (lastPart && lastPart.length > 5) {
-          // Convert URL slug to title case (e.g., "fullstack-software-engineer" -> "Fullstack Software Engineer")
-          jobTitle = lastPart
-            .split(/[-_]/)
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-            .join(' ')
-            .replace(/\d+/g, '')
-            .trim();
-          console.log('[Manual Job] Extracted title from URL:', jobTitle);
-        }
-      }
-
-      // Default fallback
-      if (!jobTitle || jobTitle.length === 0) {
-        jobTitle = 'Job Application';
-        jobDescription = userInput;
-        console.log('[Manual Job] Using fallback title');
-      }
-
-      console.log('[Manual Job] Final parsed result:', {
-        jobTitle,
-        company,
-        descriptionLength: jobDescription.length
-      });
-
-      const analysisResponse = await fetch(FUNCTIONS_ENDPOINTS.ANALYZE_STREAM, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          resumeText,
-          jobDescription,
-        }),
-      });
-
-      if (!analysisResponse.ok) {
-        throw new Error("Failed to analyze resume");
-      }
-
-      console.log('Analysis response received, starting to read stream...');
-
-      const reader = analysisResponse.body?.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      let partialResult: Partial<ResumeAnalysisResult> = {};
-
-      if (reader) {
-        setMessages(prev => prev.map(msg =>
-          msg.id === streamingMsg.id
-            ? {
-                ...msg,
-                analysisResult: {},
-                isStreaming: true,
-                content: '',
-                jobTitle: jobTitle,
-                jobCompany: company || undefined
-              }
-            : msg
-        ));
-
-        while (true) {
-          const { done, value } = await reader.read();
-
-          if (done) {
-            console.log('Stream complete!');
-            break;
-          }
-
-          const chunk = decoder.decode(value, { stream: true });
-          buffer += chunk;
-
-          try {
-            const jsonMatch = buffer.match(/\{[\s\S]*\}/);
-            if (jsonMatch) {
-              const potentialJson = jsonMatch[0];
-
-              try {
-                const parsed = JSON.parse(potentialJson) as Partial<ResumeAnalysisResult>;
-
-                const hasNewData = Object.keys(parsed).some(key => {
-                  const typedKey = key as keyof ResumeAnalysisResult;
-                  return JSON.stringify(parsed[typedKey]) !== JSON.stringify(partialResult[typedKey]);
-                });
-
-                if (hasNewData) {
-                  partialResult = { ...partialResult, ...parsed };
-                  console.log('Updated partial result:', Object.keys(partialResult));
-
-                  setMessages(prev => prev.map(msg =>
-                    msg.id === streamingMsg.id
-                      ? {
-                          ...msg,
-                          analysisResult: partialResult,
-                          isStreaming: true,
-                          content: '',
-                          jobTitle: jobTitle,
-                          jobCompany: company || undefined
-                        }
-                      : msg
-                  ));
-                }
-              } catch (parseError) {
-              }
-            }
-          } catch (e) {
-          }
-        }
-
-        // Final update - mark as complete
-        setMessages(prev => prev.map(msg =>
-          msg.id === streamingMsg.id
-            ? { ...msg, isStreaming: false }
-            : msg
-        ));
-
-        // Save to Firebase with final result
-        if (user && partialResult) {
-          try {
-            console.log('[Save Analysis] Preparing to save manual job to Firestore:', {
-              jobUrl: manualJobUrl,
-              jobTitle: jobTitle,
-              company: company || undefined,
-              score: partialResult.compatibilityScore,
-              resumeFile: resumeFile?.name
-            });
-
-            const analysisId = await saveAnalysis(
-              user.uid,
-              manualJobUrl,
-              jobTitle || undefined,
-              company || undefined,
-              resumeFile?.name || '',
-              partialResult as ResumeAnalysisResult
-            );
-
-            console.log('Analysis saved successfully with ID:', analysisId);
-
-            // Reset manual mode
-            setManualJobMode(false);
-            setManualJobUrl("");
-            setManualJobTitle("");
-            setManualJobCompany("");
-          } catch (saveError) {
-            console.error("Failed to save analysis:", saveError);
-            Alert.alert("Warning", "Analysis completed but failed to save to history");
-          }
-        }
-      } else {
-        console.error('No reader available!');
-      }
-    } catch (error) {
-      console.error("Manual analysis error:", error);
-      const errorMessage = error instanceof Error
-        ? error.message
-        : "Sorry, I encountered an error analyzing the job description.";
-
-      setMessages(prev => prev.map(msg =>
-        msg.id === streamingMsg.id
-          ? {
-              ...msg,
-              content: errorMessage,
-              isStreaming: false
-            }
-          : msg
-      ));
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleSendMessage = async () => {
     if (!inputText.trim() || isLoading) return;
@@ -391,7 +76,7 @@ export default function Optimize() {
 
     // If in manual job mode, treat the message as job description
     if (manualJobMode) {
-      await handleManualJobDescription(userMessage);
+      await analyzeManualJob(userMessage, messages, setMessages);
       return;
     }
 
@@ -408,228 +93,17 @@ export default function Optimize() {
       return;
     }
 
-    setIsLoading(true);
-
-    const streamingMsg: Message = {
-      id: (Date.now() + 1).toString(),
-      role: 'assistant',
-      content: "Let me analyze that job posting...",
-      timestamp: new Date(),
-      isStreaming: true,
-    };
-    setMessages(prev => [...prev, streamingMsg]);
-
-    try {
-      const jobResponse = await fetch(FUNCTIONS_ENDPOINTS.FETCH_JOB, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ jobUrl: userMessage }),
-      });
-
-      if (!jobResponse.ok) {
-        const errorData = await jobResponse.json().catch(() => ({ error: 'Failed to fetch job posting' }));
-        throw new Error(errorData.error || "Failed to fetch job posting");
-      }
-
-      const jobData = await jobResponse.json();
-
-      // Check if job description is too short (likely an error)
-      if (!jobData.description || jobData.description.length < 200) {
-        throw new Error("The job posting could not be accessed. This website may block automated access. Please try a different job posting.");
-      }
-
-      console.log('[Job Fetch] Job data retrieved:', {
-        title: jobData.title,
-        company: jobData.company,
-        descriptionLength: jobData.description?.length || 0,
-        descriptionPreview: jobData.description?.substring(0, 200) || 'N/A'
-      });
-
-      setMessages(prev => prev.map(msg =>
-        msg.id === streamingMsg.id
-          ? { ...msg, content: `Found the job posting: ${jobData.title || 'Job'} at ${jobData.company || 'Company'}\n\nAnalyzing your resume match...` }
-          : msg
-      ));
-
-      console.log('[Analysis Request] Sending analysis request:', {
-        endpoint: FUNCTIONS_ENDPOINTS.ANALYZE_STREAM,
-        resumeTextLength: resumeText.length,
-        jobDescriptionLength: jobData.description?.length || 0,
-        jobDescriptionPreview: jobData.description?.substring(0, 200) || 'N/A'
-      });
-
-      const analysisResponse = await fetch(FUNCTIONS_ENDPOINTS.ANALYZE_STREAM, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          resumeText,
-          jobDescription: jobData.description,
-        }),
-      });
-
-      if (!analysisResponse.ok) {
-        throw new Error("Failed to analyze resume");
-      }
-
-      console.log('Analysis response received, starting to read stream...');
-
-      const reader = analysisResponse.body?.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      let partialResult: Partial<ResumeAnalysisResult> = {};
-
-      if (reader) {
-
-        setMessages(prev => prev.map(msg =>
-          msg.id === streamingMsg.id
-            ? {
-                ...msg,
-                analysisResult: {},
-                isStreaming: true,
-                content: '',
-                jobTitle: jobData.title,
-                jobCompany: jobData.company
-              }
-            : msg
-        ));
-
-        while (true) {
-          const { done, value } = await reader.read();
-
-          if (done) {
-            console.log('Stream complete!');
-            break;
-          }
-
-          const chunk = decoder.decode(value, { stream: true });
-          buffer += chunk;
-
-          try {
-            const jsonMatch = buffer.match(/\{[\s\S]*\}/);
-            if (jsonMatch) {
-              const potentialJson = jsonMatch[0];
-
-              try {
-                const parsed = JSON.parse(potentialJson) as Partial<ResumeAnalysisResult>;
-
-                // Update partial result with any new fields
-                const hasNewData = Object.keys(parsed).some(key => {
-                  const typedKey = key as keyof ResumeAnalysisResult;
-                  return JSON.stringify(parsed[typedKey]) !== JSON.stringify(partialResult[typedKey]);
-                });
-
-                if (hasNewData) {
-                  partialResult = { ...partialResult, ...parsed };
-                  console.log('Updated partial result:', Object.keys(partialResult));
-
-                  // Update UI with partial result
-                  setMessages(prev => prev.map(msg =>
-                    msg.id === streamingMsg.id
-                      ? {
-                          ...msg,
-                          analysisResult: partialResult,
-                          isStreaming: true,
-                          content: '',
-                          jobTitle: jobData.title,
-                          jobCompany: jobData.company
-                        }
-                      : msg
-                  ));
-                }
-              } catch (parseError) {
-              }
-            }
-          } catch (e) {
-          }
-        }
-
-        // Final update - mark as complete
-        setMessages(prev => prev.map(msg =>
-          msg.id === streamingMsg.id
-            ? { ...msg, isStreaming: false }
-            : msg
-        ));
-
-        // Save to Firebase with final result
-        if (user && partialResult) {
-          try {
-            console.log('[Save Analysis] Preparing to save to Firestore:', {
-              jobUrl: userMessage,
-              jobTitle: jobData.title,
-              company: jobData.company,
-              score: partialResult.compatibilityScore,
-              resumeFile: resumeFile.name,
-              hasProjectRecommendations: !!partialResult.projectRecommendations,
-              projectCount: partialResult.projectRecommendations?.length || 0,
-              firstProjectTitle: partialResult.projectRecommendations?.[0]?.title || 'N/A'
-            });
-
-            const analysisId = await saveAnalysis(
-              user.uid,
-              userMessage,
-              jobData.title,
-              jobData.company,
-              resumeFile.name,
-              partialResult as ResumeAnalysisResult
-            );
-
-            console.log('Analysis saved successfully with ID:', analysisId);
-          } catch (saveError) {
-            console.error("Failed to save analysis:", saveError);
-            Alert.alert("Warning", "Analysis completed but failed to save to history");
-          }
-        } else {
-          console.warn('Not saving analysis - missing user or result:', {
-            hasUser: !!user,
-            hasResult: !!partialResult,
-            resultKeys: partialResult ? Object.keys(partialResult) : []
-          });
-        }
-      } else {
-        console.error('No reader available!');
-      }
-
-    } catch (error) {
-      console.error("Analysis error:", error);
-      const errorMessage = error instanceof Error
-        ? error.message
-        : "Sorry, I encountered an error analyzing that job posting. Please check the URL and try again.";
-
-      // Check if it's a scraping/access error
-      const isScrapingError = errorMessage.includes("could not be accessed") ||
-                              errorMessage.includes("block") ||
-                              errorMessage.includes("denied");
-
-      if (isScrapingError) {
-        // Offer manual paste option
-        setManualJobMode(true);
-        setManualJobUrl(userMessage);
-
-        setMessages(prev => prev.map(msg =>
-          msg.id === streamingMsg.id
-            ? {
-                ...msg,
-                content: `${errorMessage}\n\n💡 **Alternative**: You can manually paste the job description instead.\n\nPlease provide the following information:\n1. Job title\n2. Company name\n3. Full job description\n\nFormat: [Job Title] at [Company]\n[Job Description]`,
-                isStreaming: false
-              }
-            : msg
-        ));
-      } else {
-        setMessages(prev => prev.map(msg =>
-          msg.id === streamingMsg.id
-            ? {
-                ...msg,
-                content: errorMessage,
-                isStreaming: false
-              }
-            : msg
-        ));
-      }
-    } finally {
-      setIsLoading(false);
-    }
+    await analyzeJobUrl(userMessage, messages, setMessages);
   };
 
+  if (isLoadingResume) {
+    return (
+      <View className="flex-1 bg-black items-center justify-center">
+        <ActivityIndicator size="large" color="#3b82f6" />
+        <Text className="text-zinc-400 mt-4 text-sm">Loading your resume...</Text>
+      </View>
+    );
+  }
 
   return (
     <KeyboardAvoidingView
@@ -641,6 +115,7 @@ export default function Optimize() {
         <Text className="text-white text-2xl font-bold">Resume Optimizer</Text>
         <Text className="text-zinc-400 text-sm mt-1">AI-powered job fit analysis</Text>
       </View>
+
       <ScrollView
         ref={scrollViewRef}
         className="flex-1 px-4"
@@ -719,6 +194,7 @@ export default function Optimize() {
           </View>
         ))}
       </ScrollView>
+
       <View className="px-4 pb-6 border-t border-zinc-800/50 bg-black/95" style={{ paddingBottom: Platform.OS === "web" ? 24 : 32 }}>
         <View className="flex-row items-center mt-4">
           <View className={`flex-1 rounded-3xl mr-2 ${
@@ -752,7 +228,6 @@ export default function Optimize() {
                 onSubmitEditing={handleSendMessage}
                 returnKeyType="send"
                 onKeyPress={(e) => {
-                  // On web, handle Enter key to submit (Shift+Enter for new line)
                   if (Platform.OS === 'web' && e.nativeEvent.key === 'Enter') {
                     const nativeEvent = e.nativeEvent as any;
                     if (!nativeEvent.shiftKey) {

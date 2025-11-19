@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { View, Text, TouchableOpacity } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 
 interface HeaderProps {
   showLoginButton?: boolean;
@@ -22,12 +22,6 @@ export function Header({ showLoginButton = true }: HeaderProps) {
             </Text>
           </View>
           <View className="flex-row gap-x-3">
-            <TouchableOpacity
-              onPress={() => router.push("/")}
-              className="px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-md active:opacity-80"
-            >
-              <Text className="text-white font-medium text-sm">Home</Text>
-            </TouchableOpacity>
             {showLoginButton && (
               <TouchableOpacity
                 onPress={() => router.push("/login")}

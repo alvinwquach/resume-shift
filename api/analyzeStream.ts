@@ -13,7 +13,7 @@ const resumeAnalysisSchema = z.object({
     skill: z.string(),
     present: z.boolean(),
     importance: z.enum(['critical', 'high', 'medium', 'low'])
-  })).describe('Analysis of required skills'),
+  })).describe('Analysis of required skills - IMPORTANT: Search the ENTIRE resume carefully before marking present as false'),
   experienceGaps: z.array(z.object({
     requirement: z.string(),
     gap: z.string(),
@@ -30,7 +30,7 @@ const resumeAnalysisSchema = z.object({
     keyword: z.string(),
     reason: z.string(),
     currentlyPresent: z.boolean()
-  })).describe('Keywords to add or emphasize'),
+  })).describe('Keywords to add or emphasize - IMPORTANT: Set currentlyPresent to TRUE if the keyword appears ANYWHERE in the resume text'),
   formattingTips: z.array(z.string()).describe('Resume formatting suggestions'),
   overallFeedback: z.string().describe('Comprehensive summary and recommendations')
 });
@@ -53,6 +53,38 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
       return;
     }
+
+    // Pre-scan resume for common technologies to prevent hallucination
+    const commonTechs = [
+      // Frontend Frameworks & Libraries
+      'React Native', 'React', 'Next.js', 'Vue', 'Angular', 'Svelte', 'Expo',
+      // Languages
+      'TypeScript', 'JavaScript', 'Python', 'Java', 'Go', 'Rust', 'Swift', 'Kotlin', 'C++', 'C#',
+      // Backend & APIs
+      'Node.js', 'Express', 'FastAPI', 'Django', 'Flask', 'GraphQL', 'REST', 'API', 'Apollo',
+      // Databases
+      'Firebase', 'Supabase', 'MongoDB', 'PostgreSQL', 'MySQL', 'Redis', 'Firestore', 'Prisma', 'Drizzle',
+      // Cloud & DevOps
+      'AWS', 'GCP', 'Azure', 'Vercel', 'Docker', 'Kubernetes', 'CI/CD',
+      // Styling & UI
+      'Tailwind', 'CSS', 'SASS', 'styled-components', 'Material-UI', 'Chakra UI',
+      // AI/ML
+      'OpenAI', 'TensorFlow', 'PyTorch', 'Scikit-learn', 'Pandas', 'NumPy',
+      // Testing
+      'Jest', 'Cypress', 'Playwright', 'Testing Library',
+      // Mobile
+      'iOS', 'Android', 'Flutter',
+      // Tools & Others
+      'Git', 'GitHub', 'Webpack', 'Vite', 'D3.js', 'WebSocket', 'Zustand'
+    ];
+
+    const foundTechs = commonTechs.filter(tech =>
+      resumeText.toLowerCase().includes(tech.toLowerCase())
+    );
+
+    const techContext = foundTechs.length > 0
+      ? `\n\nIMPORTANT - Technologies detected in resume: ${foundTechs.join(', ')}\nDo NOT mark these as missing!`
+      : '';
 
     const result = streamObject({
       model: openai('gpt-4o'),
@@ -91,7 +123,7 @@ SCORING GUIDANCE:
 - <50: Poor match, may not be suitable for this role
 
 Be specific, honest, and constructive. Focus on actionable improvements that will genuinely help the candidate.`,
-      prompt: `Analyze this resume against the job posting and provide a comprehensive, detailed analysis.
+      prompt: `Analyze this resume against the job posting and provide a comprehensive, detailed analysis.${techContext}
 
 RESUME:
 ${resumeText}
@@ -109,11 +141,14 @@ ANALYSIS INSTRUCTIONS:
    - Industry/domain context - sector-specific expertise needed
 
 2. **Match Against Resume:**
+   - CRITICAL: Carefully search the ENTIRE resume text for skills/technologies before marking them as missing
+   - Check for variations: "React Native" may appear in project descriptions, tech stacks, or bullets
    - Exact tech stack matches (be specific: React vs React Native, AWS vs GCP)
    - Seniority alignment (does reporting structure match candidate's level?)
    - Scope fit (has candidate worked with similar team sizes/cross-functional work?)
    - Industry experience (relevant domain expertise?)
    - Cultural signals (does candidate's presentation align with company values?)
+   - VERIFY: If marking a skill as "MISSING", double-check the resume text to ensure it's truly absent
 
 3. **Provide Actionable Recommendations:**
    - Be honest about critical gaps vs areas for improvement
@@ -150,7 +185,24 @@ ANALYSIS INSTRUCTIONS:
      * Company in supply chain → Suggest building a shipment tracking dashboard
    - For each project, specify: title, description, skills demonstrated, impact on candidacy, and estimated time to build
 
-Provide a thorough, honest analysis with specific examples from both the resume and job posting. Help candidates understand not just IF they're a fit, but HOW to position themselves better and what to BUILD to become more competitive.`,
+Provide a thorough, honest analysis with specific examples from both the resume and job posting. Help candidates understand not just IF they're a fit, but HOW to position themselves better and what to BUILD to become more competitive.
+
+**CRITICAL ACCURACY REQUIREMENT:**
+Before marking ANY skill, technology, or keyword as "MISSING" or "not present":
+1. Use Ctrl+F / search functionality mentally to scan the ENTIRE resume text
+2. Check for the skill in: project descriptions, tech stack lists, job titles, bullet points, and summary sections
+3. Look for variations (e.g., "React Native" = "RN", "TypeScript" = "TS")
+4. Only mark as MISSING if you are 100% certain it does not appear anywhere in the resume
+5. If unsure, mark as PRESENT and note it could be emphasized more
+
+**FOR JOB TITLES / ROLE KEYWORDS (e.g., "Technical Product Manager", "DevOps Engineer"):**
+- Do NOT mark these as "MISSING" just because the exact title isn't listed
+- Instead, check if the candidate has DONE the work associated with that role
+- Example: "Technical Product Management" - look for evidence of: roadmap planning, feature prioritization, stakeholder management, product decisions, technical leadership
+- If they've done the work but don't have the title, mark as PRESENT but suggest emphasizing it more
+- Only mark role keywords as MISSING if there's no evidence of relevant experience
+
+DO NOT hallucinate missing skills that are actually present in the resume. Accuracy is critical for user trust.`,
     });
 
     // Set headers for streaming
