@@ -3,10 +3,8 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { DemoSection } from "../components/landing/DemoSection";
-import { FAQSection } from "../components/landing/FAQSection";
 import { FeaturesSection } from "../components/landing/FeaturesSection";
 import { HeroSection } from "../components/landing/HeroSection";
-import { HowItWorksSection } from "../components/landing/HowItWorksSection";
 import { TestimonialsSection } from "../components/landing/TestimonialsSection";
 
 export default function LandingPage() {
@@ -72,15 +70,6 @@ export default function LandingPage() {
           borderColor={borderColor}
           accentBg={accentBg}
         />
-        <View className={`${accentBg} border-y ${borderColor}`}>
-          <HowItWorksSection
-            isDarkMode={isDarkMode}
-            textColor={textColor}
-            mutedColor={mutedColor}
-            cardBg={cardBg}
-            borderColor={borderColor}
-          />
-        </View>
         <TestimonialsSection
           isDarkMode={isDarkMode}
           textColor={textColor}
@@ -89,14 +78,7 @@ export default function LandingPage() {
           borderColor={borderColor}
           accentBg={accentBg}
         />
-        <FAQSection
-          isDarkMode={isDarkMode}
-          textColor={textColor}
-          mutedColor={mutedColor}
-          cardBg={cardBg}
-          borderColor={borderColor}
-        />
-        <View className={`${accentBg} py-24 border-t ${borderColor}`}>
+        <View className={`py-24 border-t ${borderColor}`}>
           <View className="px-6 max-w-5xl mx-auto w-full items-center">
             <Text className={`${textColor} text-6xl font-black mb-6 text-center`}>
               Ready to land your{'\n'}dream job?
@@ -114,21 +96,7 @@ export default function LandingPage() {
             </TouchableOpacity>
           </View>
         </View>
-        <View className={`${bgColor} border-t ${borderColor}`}>
-          <View className="px-6 py-12 max-w-7xl mx-auto w-full">
-            <View className="flex-row items-center justify-between">
-              <View className="flex-row items-center">
-                <View className={`w-8 h-8 ${isDarkMode ? 'bg-blue-600' : 'bg-gray-900'} rounded-lg items-center justify-center mr-3`}>
-                  <Ionicons name="document-text" size={16} color="white" />
-                </View>
-                <Text className={`${textColor} text-lg font-black`}>Resume Pivot</Text>
-              </View>
-              <Text className={`${mutedColor} text-sm`}>
-                © 2025 Resume Pivot. All rights reserved.
-              </Text>
-            </View>
-          </View>
-        </View>
+      
       </ScrollView>
     </View>
   );
