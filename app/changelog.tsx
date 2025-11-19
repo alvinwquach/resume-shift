@@ -70,7 +70,7 @@ export default function ChangelogPage() {
             </Text>
             <Text className="text-zinc-400 text-base leading-relaxed">
               We'd love to hear your thoughts on what features you'd like to see
-              next. Your feedback helps shape ResumeShift's future.
+              next. Your feedback helps shape Resume Pivot's future.
             </Text>
           </View>
         </View>

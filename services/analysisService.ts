@@ -6,7 +6,7 @@ const ANALYSES_COLLECTION = "analyses";
 
 
 /**
- * Save an analysis result to Firestore
+ * Save an analysis result to Firestore with optional resume version tracking
  */
 export async function saveAnalysis(
   userId: string,
@@ -14,7 +14,9 @@ export async function saveAnalysis(
   jobTitle: string | undefined,
   companyName: string | undefined,
   resumeFileName: string | undefined,
-  result: ResumeAnalysisResult
+  result: ResumeAnalysisResult,
+  resumeId?: string,
+  resumeLabel?: string
 ): Promise<string> {
   try {
     const analysisData = {
@@ -23,6 +25,8 @@ export async function saveAnalysis(
       jobTitle: jobTitle || null,
       companyName: companyName || null,
       resumeFileName: resumeFileName || null,
+      resumeId: resumeId || null,
+      resumeLabel: resumeLabel || null,
       result,
       createdAt: Timestamp.now(),
     };
@@ -32,7 +36,9 @@ export async function saveAnalysis(
       userId,
       jobTitle,
       companyName,
-      score: result.compatibilityScore
+      score: result.compatibilityScore,
+      resumeId,
+      resumeLabel
     });
 
     const docRef = await addDoc(collection(db, ANALYSES_COLLECTION), analysisData);
@@ -70,6 +76,8 @@ export async function getUserAnalyses(userId: string): Promise<SavedAnalysis[]> 
         result: data.result,
         createdAt: data.createdAt.toDate(),
         resumeFileName: data.resumeFileName,
+        resumeId: data.resumeId,
+        resumeLabel: data.resumeLabel,
       });
     });
 
@@ -112,6 +120,8 @@ export function subscribeToUserAnalyses(
           result: data.result,
           createdAt: data.createdAt.toDate(),
           resumeFileName: data.resumeFileName,
+          resumeId: data.resumeId,
+          resumeLabel: data.resumeLabel,
         });
       });
 

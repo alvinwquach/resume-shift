@@ -52,4 +52,6 @@ export interface SavedAnalysis {
   result: ResumeAnalysisResult;
   createdAt: Date;
   resumeFileName?: string;
+  resumeId?: string; 
+  resumeLabel?: string; 
 }

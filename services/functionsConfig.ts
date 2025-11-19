@@ -18,9 +18,9 @@ function getFunctionUrl(functionName: string): string {
   }
 
   // Default to Vercel serverless functions
-  // In development, Vercel dev server runs on port 3000
+  // In development, Vercel dev server runs on port 3001 (Expo uses 3000)
   const isDev = process.env.NODE_ENV === 'development' || __DEV__;
-  const baseUrl = isDev ? 'http://localhost:3000' : '';
+  const baseUrl = isDev ? 'http://localhost:3001' : '';
   return `${baseUrl}/api/${functionName}`;
 }
 
