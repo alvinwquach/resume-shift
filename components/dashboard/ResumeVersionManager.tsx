@@ -203,37 +203,43 @@ export function ResumeVersionManager({ userId }: ResumeVersionManagerProps) {
                       </>
                     )}
                   </View>
-                  <View className="flex-row border-t border-zinc-800/50 pt-3 mt-2">
-                    <TouchableOpacity
-                      onPress={() => handleViewResume(resume.fileUrl)}
-                      className="flex-1 flex-row items-center justify-center bg-zinc-800/50 py-2 rounded-lg mr-2"
-                    >
-                      <Ionicons name="eye-outline" size={14} color="#a1a1aa" />
-                      <Text className="text-zinc-400 text-xs font-medium ml-1">View</Text>
-                    </TouchableOpacity>
-
-                    {!resume.isDefault && (
+                  <View className="border-t border-zinc-800/50 pt-3 mt-2">
+                    <View className="flex-row mb-2">
                       <TouchableOpacity
-                        onPress={() => setDefaultResume({ userId, resumeId: resume.id })}
-                        className="flex-1 flex-row items-center justify-center bg-zinc-800/50 py-2 rounded-lg mr-2"
+                        onPress={() => handleViewResume(resume.fileUrl)}
+                        className="flex-1 flex-row items-center justify-center bg-zinc-800/50 py-2.5 rounded-lg mr-2"
                       >
-                        <Ionicons name="checkmark-circle-outline" size={14} color="#a1a1aa" />
-                        <Text className="text-zinc-400 text-xs font-medium ml-1">Set Default</Text>
+                        <Ionicons name="eye-outline" size={14} color="#a1a1aa" />
+                        <Text className="text-zinc-400 text-xs font-medium ml-1.5">View</Text>
                       </TouchableOpacity>
-                    )}
-                    <TouchableOpacity
-                      onPress={() => handleEditResume(resume.id)}
-                      className="w-8 h-8 items-center justify-center bg-zinc-800/50 rounded-lg mr-2"
-                    >
-                      <Ionicons name="create-outline" size={14} color="#a1a1aa" />
-                    </TouchableOpacity>
 
-                    <TouchableOpacity
-                      onPress={() => handleDeleteClick(resume.id)}
-                      className="w-8 h-8 items-center justify-center bg-red-500/10 rounded-lg"
-                    >
-                      <Ionicons name="trash-outline" size={14} color="#ef4444" />
-                    </TouchableOpacity>
+                      {!resume.isDefault && (
+                        <TouchableOpacity
+                          onPress={() => setDefaultResume({ userId, resumeId: resume.id })}
+                          className="flex-1 flex-row items-center justify-center bg-emerald-500/10 border border-emerald-500/20 py-2.5 rounded-lg"
+                        >
+                          <Ionicons name="checkmark-circle" size={14} color="#34d399" />
+                          <Text className="text-emerald-400 text-xs font-medium ml-1.5">Set Default</Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                    <View className="flex-row">
+                      <TouchableOpacity
+                        onPress={() => handleEditResume(resume.id)}
+                        className="flex-1 flex-row items-center justify-center bg-zinc-800/50 py-2.5 rounded-lg mr-2"
+                      >
+                        <Ionicons name="create-outline" size={14} color="#a1a1aa" />
+                        <Text className="text-zinc-400 text-xs font-medium ml-1.5">Edit</Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        onPress={() => handleDeleteClick(resume.id)}
+                        className="flex-1 flex-row items-center justify-center bg-red-500/10 border border-red-500/20 py-2.5 rounded-lg"
+                      >
+                        <Ionicons name="trash-outline" size={14} color="#ef4444" />
+                        <Text className="text-red-400 text-xs font-medium ml-1.5">Delete</Text>
+                      </TouchableOpacity>
+                    </View>
                   </View>
                 </View>
               ))}
