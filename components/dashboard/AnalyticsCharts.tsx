@@ -1,7 +1,9 @@
-import { View, Text, Platform, Dimensions } from 'react-native';
+
+import { View, Text, Platform, Dimensions, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { PieChart, LineChart } from 'react-native-chart-kit';
 import { SavedAnalysis } from '../../types/analysis';
+import { useState } from 'react';
 
 interface AnalyticsChartsProps {
   analyses: SavedAnalysis[];
@@ -10,6 +12,7 @@ interface AnalyticsChartsProps {
 export function AnalyticsCharts({ analyses }: AnalyticsChartsProps) {
   const screenWidth = Dimensions.get('window').width;
   const isWeb = Platform.OS === 'web';
+  const ITEMS_PER_PAGE = 10;
 
   const highScoreCount = analyses.filter(a => a.result.compatibilityScore >= 80).length;
   const mediumScoreCount = analyses.filter(a => a.result.compatibilityScore >= 60 && a.result.compatibilityScore < 80).length;
@@ -21,10 +24,33 @@ export function AnalyticsCharts({ analyses }: AnalyticsChartsProps) {
     { name: "Weak", population: lowScoreCount, color: "#fb7185", legendFontColor: "#71717a", legendFontSize: 12 },
   ].filter(d => d.population > 0);
 
+  // Sort analyses by date (oldest first for trend chart)
+  const sortedAnalyses = [...analyses].sort((a, b) =>
+    new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+  );
+
+  // Calculate total pages
+  const totalPages = Math.ceil(sortedAnalyses.length / ITEMS_PER_PAGE);
+
+  // Default to last page (most recent data)
+  const [currentPage, setCurrentPage] = useState(totalPages - 1);
+
+  // Get paginated data (show most recent page by default)
+  const startIndex = currentPage * ITEMS_PER_PAGE;
+  const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, sortedAnalyses.length);
+  const paginatedAnalyses = sortedAnalyses.slice(startIndex, endIndex);
+
+  // Generate labels and data points for current page
+  const labels = paginatedAnalyses.map((a) => {
+    const date = new Date(a.createdAt);
+    return `${date.getMonth() + 1}/${date.getDate()}`;
+  });
+  const dataPoints = paginatedAnalyses.map(a => a.result.compatibilityScore);
+
   const trendData = {
-    labels: analyses.slice(0, 8).reverse().map((_, i) => `${i + 1}`),
+    labels,
     datasets: [{
-      data: analyses.slice(0, 8).reverse().map(a => a.result.compatibilityScore),
+      data: dataPoints.length > 0 ? dataPoints : [0],
     }]
   };
 
@@ -76,11 +102,36 @@ export function AnalyticsCharts({ analyses }: AnalyticsChartsProps) {
         )}
         {analyses.length > 1 && (
           <View className="bg-zinc-900/50 border border-zinc-800/50 rounded-2xl p-5 mb-6">
-            <Text className="text-white text-base font-semibold mb-4">Score Trend</Text>
-            <View className="overflow-hidden">
+            <View className="flex-row items-center justify-between mb-4">
+              <Text className="text-white text-base font-semibold">Score Trend</Text>
+              {totalPages > 1 && (
+                <View className="flex-row items-center">
+                  <TouchableOpacity
+                    onPress={() => setCurrentPage(Math.max(0, currentPage - 1))}
+                    disabled={currentPage === 0}
+                    className={`px-3 py-1.5 rounded-lg mr-2 flex-row items-center ${currentPage === 0 ? 'opacity-30 bg-zinc-800/30' : 'bg-zinc-800/50'}`}
+                  >
+                    <Ionicons name="chevron-back" size={14} color="#a1a1aa" />
+                    <Text className="text-zinc-400 text-xs ml-1">Older</Text>
+                  </TouchableOpacity>
+                  <Text className="text-zinc-400 text-xs mx-2">
+                    Page {currentPage + 1} of {totalPages}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => setCurrentPage(Math.min(totalPages - 1, currentPage + 1))}
+                    disabled={currentPage === totalPages - 1}
+                    className={`px-3 py-1.5 rounded-lg flex-row items-center ${currentPage === totalPages - 1 ? 'opacity-30 bg-zinc-800/30' : 'bg-zinc-800/50'}`}
+                  >
+                    <Text className="text-zinc-400 text-xs mr-1">Newer</Text>
+                    <Ionicons name="chevron-forward" size={14} color="#a1a1aa" />
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+            <View className="overflow-x-auto">
               <LineChart
                 data={trendData}
-                width={Math.min(screenWidth - 100, isWeb && screenWidth > 1024 ? 450 : screenWidth - 100)}
+                width={paginatedAnalyses.length * 60}
                 height={220}
                 chartConfig={{
                   backgroundColor: "#0A0A0A",
@@ -93,19 +144,27 @@ export function AnalyticsCharts({ analyses }: AnalyticsChartsProps) {
                     borderRadius: 16
                   },
                   propsForDots: {
-                    r: "4",
+                    r: "5",
                     strokeWidth: "2",
                     stroke: "#3b82f6"
                   }
                 }}
+                withInnerLines={true}
+                withOuterLines={true}
+                withVerticalLines={false}
+                withHorizontalLines={true}
                 bezier
                 style={{
                   marginVertical: 8,
                   borderRadius: 16
                 }}
+                getDotColor={() => '#3b82f6'}
+                segments={4}
               />
             </View>
-            <Text className="text-zinc-500 text-xs text-center mt-2">Last {analyses.slice(0, 8).length} applications</Text>
+            <Text className="text-zinc-500 text-xs text-center mt-2">
+              Showing {startIndex + 1}-{endIndex} of {sortedAnalyses.length} application{sortedAnalyses.length !== 1 ? 's' : ''}
+            </Text>
           </View>
         )}
       </View>
