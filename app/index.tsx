@@ -1,252 +1,129 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { DemoSection } from "../components/landing/DemoSection";
+import { FAQSection } from "../components/landing/FAQSection";
+import { FeaturesSection } from "../components/landing/FeaturesSection";
+import { HeroSection } from "../components/landing/HeroSection";
+import { HowItWorksSection } from "../components/landing/HowItWorksSection";
+import { TestimonialsSection } from "../components/landing/TestimonialsSection";
 
 export default function LandingPage() {
   const router = useRouter();
+  const [isDarkMode, setIsDarkMode] = useState(true);
+
+  const bgColor = isDarkMode ? 'bg-[#0A0A0A]' : 'bg-white';
+  const textColor = isDarkMode ? 'text-white' : 'text-gray-900';
+  const mutedColor = isDarkMode ? 'text-gray-400' : 'text-gray-600';
+  const cardBg = isDarkMode ? 'bg-zinc-900/50' : 'bg-white';
+  const borderColor = isDarkMode ? 'border-zinc-800' : 'border-gray-200';
+  const accentBg = isDarkMode ? 'bg-zinc-900' : 'bg-gray-50';
 
   return (
-    <View className="flex-1 bg-zinc-950">
+    <View className={`flex-1 ${bgColor}`}>
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <View className="bg-zinc-950 border-b border-zinc-800">
-          <View className="px-6 pt-12 pb-4 max-w-4xl mx-auto w-full">
+        <View className={`${bgColor} border-b ${borderColor} sticky top-0 z-50`}>
+          <View className="px-6 py-4 max-w-7xl mx-auto w-full">
             <View className="flex-row items-center justify-between">
-            <TouchableOpacity
-              onPress={() => router.push("/")}
-              className="flex-row items-center active:opacity-80"
-            >
-              <View className="w-8 h-8 bg-white rounded-lg items-center justify-center mr-2">
-                <Ionicons name="document-text" size={18} color="#000" />
-              </View>
-              <Text className="text-white text-lg font-semibold">
-                Resume Pivot
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => router.push("/login")}
-              className="px-4 py-2 bg-white rounded-md active:opacity-80"
-            >
-              <Text className="text-black font-medium text-sm">Log in</Text>
-            </TouchableOpacity>
-          </View>
-          </View>
-        </View>
-        <View className="bg-zinc-950">
-          <View className="px-6 pt-20 pb-24 max-w-4xl mx-auto w-full">
-            <View className="mb-6">
-            <View className="bg-zinc-900 border border-zinc-800 rounded-full px-4 py-2 self-start mb-8">
-              <Text className="text-zinc-400 text-xs font-medium">
-                ✨ AI-Powered Resume Intelligence
-              </Text>
-            </View>
-          </View>
-          <Text className="text-white text-5xl font-bold leading-tight mb-6">
-            Your resume,{"\n"}
-            <Text className="text-zinc-500">optimized.</Text>
-          </Text>
-          <Text className="text-zinc-400 text-lg leading-relaxed mb-10 max-w-md">
-            Upload your resume and a job link. Get an instant fit score with personalized feedback to improve your chances.
-          </Text>
-          <TouchableOpacity
-            onPress={() => router.push("/login")}
-            className="bg-white rounded-md px-6 py-4 active:opacity-80 self-start"
-          >
-            <Text className="text-black font-semibold text-base">
-              Get started →
-            </Text>
-          </TouchableOpacity>
-          </View>
-        </View>
-        <View className="bg-zinc-900/30 border-y border-zinc-800">
-          <View className="px-6 py-16 max-w-4xl mx-auto w-full">
-          <Text className="text-zinc-500 text-xs font-semibold uppercase tracking-wider mb-8">
-            Features
-          </Text>
-          <View className="flex-row flex-wrap -mx-2">
-            <View className="w-1/2 px-2 mb-6">
-              <View className="w-10 h-10 bg-zinc-900 border border-zinc-800 rounded-lg items-center justify-center mb-4">
-                <Ionicons name="sparkles-outline" size={20} color="#fff" />
-              </View>
-              <Text className="text-white text-xl font-semibold mb-2">
-                Job fit analysis
-              </Text>
-              <Text className="text-zinc-400 text-base leading-relaxed">
-                Upload your resume and a public job link. Our AI analyzes your fit and provides a score with actionable feedback.
-              </Text>
-            </View>
-            <View className="w-1/2 px-2 mb-6">
-              <View className="w-10 h-10 bg-zinc-900 border border-zinc-800 rounded-lg items-center justify-center mb-4">
-                <Ionicons name="analytics-outline" size={20} color="#fff" />
-              </View>
-              <Text className="text-white text-xl font-semibold mb-2">
-                Instant fit score
-              </Text>
-              <Text className="text-zinc-400 text-base leading-relaxed">
-                See how well your resume matches the job requirements with a clear, quantified compatibility score.
-              </Text>
-            </View>
-            <View className="w-1/2 px-2 mb-6">
-              <View className="w-10 h-10 bg-zinc-900 border border-zinc-800 rounded-lg items-center justify-center mb-4">
-                <Ionicons name="bulb-outline" size={20} color="#fff" />
-              </View>
-              <Text className="text-white text-xl font-semibold mb-2">
-                Personalized suggestions
-              </Text>
-              <Text className="text-zinc-400 text-base leading-relaxed">
-                Get specific, actionable feedback on how to improve your resume for each job you're applying to.
-              </Text>
-            </View>
-            <View className="w-1/2 px-2 mb-6">
-              <View className="w-10 h-10 bg-zinc-900 border border-zinc-800 rounded-lg items-center justify-center mb-4">
-                <Ionicons name="shield-checkmark-outline" size={20} color="#fff" />
-              </View>
-              <Text className="text-white text-xl font-semibold mb-2">
-                Secure and private
-              </Text>
-              <Text className="text-zinc-400 text-base leading-relaxed">
-                Your resume and job data are encrypted and secure. We never share your information with third parties.
-              </Text>
-            </View>
-          </View>
-          </View>
-        </View>
-        <View className="bg-zinc-950">
-          <View className="px-6 py-16 max-w-4xl mx-auto w-full">
-            <Text className="text-zinc-500 text-xs font-semibold uppercase tracking-wider mb-4">
-              Pricing
-            </Text>
-            <Text className="text-white text-3xl font-bold mb-4">
-              Just kidding, free!
-            </Text>
-            <Text className="text-zinc-400 text-lg leading-relaxed mb-4">
-              We believe everyone deserves a shot at their dream job. Use Resume Pivot completely free while we build something amazing together.
-            </Text>
-            <Text className="text-zinc-500 text-base">
-              You can support us by sharing with friends who need help with their job search! 🚀
-            </Text>
-          </View>
-        </View>
-        <View className="bg-zinc-900/30 border-y border-zinc-800">
-          <View className="px-6 py-16 max-w-4xl mx-auto w-full">
-          <Text className="text-white text-2xl font-bold mb-8">
-            Job hunters love Resume Pivot!
-          </Text>
-          <View className="flex-row flex-wrap -mx-2">
-            <View className="w-1/2 px-2 mb-4">
-              <View className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 h-full">
-                <Text className="text-white font-semibold mb-2">Ben B.</Text>
-                <Text className="text-zinc-400 text-sm leading-relaxed">
-                  I hate @ResumePivot so much that I rewrote my entire resume using it
-                </Text>
-              </View>
-            </View>
-            <View className="w-1/2 px-2 mb-4">
-              <View className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 h-full">
-                <Text className="text-white font-semibold mb-2">Kevin T.</Text>
-                <Text className="text-zinc-400 text-sm leading-relaxed">
-                  I used Resume Pivot and got hired. Now I have to wake up at 7am every day. Thanks a lot.
-                </Text>
-              </View>
-            </View>
-            <View className="w-1/2 px-2 mb-4">
-              <View className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 h-full">
-                <Text className="text-white font-semibold mb-2">Kevin C.</Text>
-                <Text className="text-zinc-400 text-sm leading-relaxed">
-                  Is this a joke? Because if this is a joke, it's a really good one. I got 3 interviews in one week.
-                </Text>
-              </View>
-            </View>
-            <View className="w-1/2 px-2 mb-4">
-              <View className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 h-full">
-                <Text className="text-white font-semibold mb-2">Marcus J.</Text>
-                <Text className="text-zinc-400 text-sm leading-relaxed">
-                  Resume Pivot: 85% fit score{"\n"}Me: applies anyway{"\n"}Them: offers me the job{"\n"}Resume Pivot: surprised pikachu face
-                </Text>
-              </View>
-            </View>
-          </View>
-          </View>
-        </View>
-        <View className="bg-zinc-950">
-          <View className="px-6 py-20 max-w-4xl mx-auto w-full">
-            <View className="items-center">
-              <Text className="text-white text-4xl font-bold mb-4 text-center">
-                Find your perfect fit
-              </Text>
-              <Text className="text-zinc-400 text-lg leading-relaxed mb-8 text-center max-w-2xl">
-                Start analyzing your resume against job opportunities and get the insights you need to succeed.
-              </Text>
               <TouchableOpacity
-                onPress={() => router.push("/login")}
-                className="bg-white rounded-lg px-8 py-4 active:opacity-80"
+                onPress={() => router.push("/")}
+                className="flex-row items-center active:opacity-80"
               >
-                <Text className="text-black font-semibold text-base">
-                  Get started for free →
+                <View className={`w-9 h-9 ${isDarkMode ? 'bg-blue-600' : 'bg-gray-900'} rounded-xl items-center justify-center mr-3`}>
+                  <Ionicons name="document-text" size={20} color="white" />
+                </View>
+                <Text className={`${textColor} text-xl font-black`}>
+                  Resume Pivot
                 </Text>
               </TouchableOpacity>
+              <View className="flex-row items-center gap-3">
+                <TouchableOpacity
+                  onPress={() => setIsDarkMode(!isDarkMode)}
+                  className={`w-10 h-10 rounded-xl ${cardBg} border ${borderColor} items-center justify-center active:opacity-70`}
+                >
+                  <Ionicons name={isDarkMode ? "sunny" : "moon"} size={18} color={isDarkMode ? "#fbbf24" : "#6366f1"} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => router.push("/login")}
+                  className={`px-5 py-2.5 ${isDarkMode ? 'bg-blue-600' : 'bg-gray-900'} rounded-xl active:opacity-90`}
+                >
+                  <Text className="text-white font-semibold text-sm">Get Started</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </View>
-        <View className="bg-zinc-950 border-t border-zinc-800">
-          <View className="px-6 py-12 max-w-4xl mx-auto w-full">
-            <View className="mb-8 md:mb-12">
-              <View className="md:flex-row md:justify-between md:items-start">
-                <View className="mb-8 md:mb-0 md:max-w-xs items-center md:items-start">
-                  <TouchableOpacity
-                    onPress={() => router.push("/")}
-                    className="flex-row items-center mb-4 active:opacity-80"
-                  >
-                    <View className="w-6 h-6 bg-white rounded items-center justify-center mr-2">
-                      <Ionicons name="document-text" size={14} color="#000" />
-                    </View>
-                    <Text className="text-white text-base font-semibold">
-                      Resume Pivot
-                    </Text>
-                  </TouchableOpacity>
-                  <Text className="text-zinc-500 text-sm leading-relaxed text-center md:text-left">
-                    AI-powered resume analysis to help you land your dream job.
-                  </Text>
+        <HeroSection isDarkMode={isDarkMode} textColor={textColor} mutedColor={mutedColor} />
+        <View className={`${accentBg} border-y ${borderColor}`}>
+          <FeaturesSection
+            isDarkMode={isDarkMode}
+            textColor={textColor}
+            mutedColor={mutedColor}
+            cardBg={cardBg}
+            borderColor={borderColor}
+          />
+        </View>
+        <DemoSection
+          isDarkMode={isDarkMode}
+          textColor={textColor}
+          mutedColor={mutedColor}
+          cardBg={cardBg}
+          borderColor={borderColor}
+          accentBg={accentBg}
+        />
+        <View className={`${accentBg} border-y ${borderColor}`}>
+          <HowItWorksSection
+            isDarkMode={isDarkMode}
+            textColor={textColor}
+            mutedColor={mutedColor}
+            cardBg={cardBg}
+            borderColor={borderColor}
+          />
+        </View>
+        <TestimonialsSection
+          isDarkMode={isDarkMode}
+          textColor={textColor}
+          mutedColor={mutedColor}
+          cardBg={cardBg}
+          borderColor={borderColor}
+          accentBg={accentBg}
+        />
+        <FAQSection
+          isDarkMode={isDarkMode}
+          textColor={textColor}
+          mutedColor={mutedColor}
+          cardBg={cardBg}
+          borderColor={borderColor}
+        />
+        <View className={`${accentBg} py-24 border-t ${borderColor}`}>
+          <View className="px-6 max-w-5xl mx-auto w-full items-center">
+            <Text className={`${textColor} text-6xl font-black mb-6 text-center`}>
+              Ready to land your{'\n'}dream job?
+            </Text>
+            <Text className={`${mutedColor} text-xl mb-12 text-center max-w-2xl`}>
+              Join job seekers using AI to optimize their resumes and get hired faster.
+            </Text>
+            <TouchableOpacity
+              onPress={() => router.push("/login")}
+              className={`${isDarkMode ? 'bg-blue-600' : 'bg-gray-900'} rounded-2xl px-12 py-6 active:opacity-90 shadow-2xl`}
+            >
+              <Text className="text-white font-bold text-xl">
+                Start for Free →
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        <View className={`${bgColor} border-t ${borderColor}`}>
+          <View className="px-6 py-12 max-w-7xl mx-auto w-full">
+            <View className="flex-row items-center justify-between">
+              <View className="flex-row items-center">
+                <View className={`w-8 h-8 ${isDarkMode ? 'bg-blue-600' : 'bg-gray-900'} rounded-lg items-center justify-center mr-3`}>
+                  <Ionicons name="document-text" size={16} color="white" />
                 </View>
-
-                <View className="md:flex-row md:gap-x-12">
-                  <View className="mb-6 md:mb-0 items-center md:items-start">
-                    <Text className="text-white text-sm font-semibold mb-3">Company</Text>
-                    <View className="gap-y-2 items-center md:items-start">
-                      <TouchableOpacity onPress={() => router.push("/about")}>
-                        <Text className="text-zinc-400 text-sm">About</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-
-                  <View className="mb-6 md:mb-0 items-center md:items-start">
-                    <Text className="text-white text-sm font-semibold mb-3">Product</Text>
-                    <View className="gap-y-2 items-center md:items-start">
-                      <TouchableOpacity onPress={() => router.push("/features")}>
-                        <Text className="text-zinc-400 text-sm">Features</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity onPress={() => router.push("/changelog")}>
-                        <Text className="text-zinc-400 text-sm">Changelog</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-
-                  <View className="items-center md:items-start">
-                    <Text className="text-white text-sm font-semibold mb-3">Legal</Text>
-                    <View className="gap-y-2 items-center md:items-start">
-                      <TouchableOpacity onPress={() => router.push("/privacy")}>
-                        <Text className="text-zinc-400 text-sm">Privacy</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity onPress={() => router.push("/terms")}>
-                        <Text className="text-zinc-400 text-sm">Terms</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                </View>
+                <Text className={`${textColor} text-lg font-black`}>Resume Pivot</Text>
               </View>
-            </View>
-
-            <View className="border-t border-zinc-800 pt-6">
-              <Text className="text-zinc-600 text-xs text-center md:text-left">
+              <Text className={`${mutedColor} text-sm`}>
                 © 2025 Resume Pivot. All rights reserved.
               </Text>
             </View>
