@@ -151,13 +151,13 @@ export function ResumeVersionManager({ userId }: ResumeVersionManagerProps) {
             </TouchableOpacity>
           </View>
         ) : (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="pb-2">
             <View className="flex-row">
               {resumes.map((resume) => (
                 <View
                   key={resume.id}
                   className="bg-zinc-900/50 border border-zinc-800/50 rounded-2xl p-4 mr-4"
-                  style={{ width: 280 }}
+                  style={{ width: Platform.OS === 'web' ? 280 : 260, minWidth: 260 }}
                 >
                   <View className="flex-row items-start justify-between mb-3">
                     <View className="flex-1 mr-2">

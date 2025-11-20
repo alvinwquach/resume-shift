@@ -49,6 +49,19 @@ export default function TabsLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="my-projects"
+        options={{
+          title: "My Projects",
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? "briefcase" : "briefcase-outline"}
+              size={24}
+              color={color}
+            />
+          ),
+        }}
+      />
     </Tabs>
   );
 }

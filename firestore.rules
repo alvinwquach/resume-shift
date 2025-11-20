@@ -11,5 +11,12 @@ service cloud.firestore {
     match /analyses/{analysisId} {
       allow read, write: if request.auth != null;
     }
+
+    // Allow authenticated users to read/write their own project rankings
+    match /projectRankings/{rankingId} {
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
   }
 }

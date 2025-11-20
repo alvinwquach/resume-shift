@@ -46,7 +46,7 @@ export function DashboardStats({ analyses }: DashboardStatsProps) {
     <View className="mb-6">
       <Text className="text-white text-xl font-bold mb-4">Overview</Text>
       <View className="flex-row flex-wrap -mx-2">
-        <View className="w-1/4 px-2 mb-4">
+        <View className="w-1/2 md:w-1/4 px-2 mb-4">
           <View className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border border-blue-500/20 rounded-2xl p-4">
             <View className="flex-row items-center justify-between mb-2">
               <Text className="text-blue-400 text-xs font-medium">Total Applications</Text>
@@ -57,7 +57,7 @@ export function DashboardStats({ analyses }: DashboardStatsProps) {
           </View>
         </View>
 
-        <View className="w-1/4 px-2 mb-4">
+        <View className="w-1/2 md:w-1/4 px-2 mb-4">
           <View className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 border border-purple-500/20 rounded-2xl p-4">
             <View className="flex-row items-center justify-between mb-2">
               <Text className="text-purple-400 text-xs font-medium">Average Score</Text>
@@ -84,7 +84,7 @@ export function DashboardStats({ analyses }: DashboardStatsProps) {
           </View>
         </View>
 
-        <View className="w-1/4 px-2 mb-4">
+        <View className="w-1/2 md:w-1/4 px-2 mb-4">
           <View className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border border-emerald-500/20 rounded-2xl p-4">
             <View className="flex-row items-center justify-between mb-2">
               <Text className="text-emerald-400 text-xs font-medium">Success Rate</Text>
@@ -95,7 +95,7 @@ export function DashboardStats({ analyses }: DashboardStatsProps) {
           </View>
         </View>
 
-        <View className="w-1/4 px-2 mb-4">
+        <View className="w-1/2 md:w-1/4 px-2 mb-4">
           <View className="bg-gradient-to-br from-amber-500/10 to-amber-600/5 border border-amber-500/20 rounded-2xl p-4">
             <View className="flex-row items-center justify-between mb-2">
               <Text className="text-amber-400 text-xs font-medium">Peak Score</Text>
@@ -144,21 +144,21 @@ export function DashboardStats({ analyses }: DashboardStatsProps) {
             </View>
           )}
         </View>
-        <View className="flex-row items-center justify-between">
+        <View className="flex-row flex-wrap items-center gap-3">
           <View className="flex-row items-center">
-            <View className="w-3 h-3 rounded bg-emerald-400 mr-2" />
+            <View className="w-3 h-3 rounded bg-emerald-400 mr-1.5" />
             <Text className="text-zinc-400 text-xs">Strong (80%+)</Text>
-            <Text className="text-white text-xs font-bold ml-2">{highScoreCount}</Text>
+            <Text className="text-white text-xs font-bold ml-1.5">{highScoreCount}</Text>
           </View>
           <View className="flex-row items-center">
-            <View className="w-3 h-3 rounded bg-amber-400 mr-2" />
+            <View className="w-3 h-3 rounded bg-amber-400 mr-1.5" />
             <Text className="text-zinc-400 text-xs">Fair (60-79%)</Text>
-            <Text className="text-white text-xs font-bold ml-2">{mediumScoreCount}</Text>
+            <Text className="text-white text-xs font-bold ml-1.5">{mediumScoreCount}</Text>
           </View>
           <View className="flex-row items-center">
-            <View className="w-3 h-3 rounded bg-rose-400 mr-2" />
+            <View className="w-3 h-3 rounded bg-rose-400 mr-1.5" />
             <Text className="text-zinc-400 text-xs">Weak ({'<'}60%)</Text>
-            <Text className="text-white text-xs font-bold ml-2">{lowScoreCount}</Text>
+            <Text className="text-white text-xs font-bold ml-1.5">{lowScoreCount}</Text>
           </View>
         </View>
       </View>

@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useEffect, useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
-interface DemoSectionProps {
+interface ResumeAnalysisDemoSectionProps {
   isDarkMode: boolean;
   textColor: string;
   mutedColor: string;
@@ -21,7 +21,7 @@ interface Message {
   showRecommendations?: boolean;
 }
 
-export function DemoSection({ isDarkMode, textColor, mutedColor, cardBg, borderColor, accentBg }: DemoSectionProps) {
+export function ResumeAnalysisDemoSection({ isDarkMode, textColor, mutedColor, cardBg, borderColor, accentBg }: ResumeAnalysisDemoSectionProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [score, setScore] = useState(0);
@@ -132,16 +132,20 @@ export function DemoSection({ isDarkMode, textColor, mutedColor, cardBg, borderC
   };
 
   return (
-    <View className={`px-6 py-20`}>
-      <Text className={`text-5xl font-black text-center mb-4 ${textColor}`}>
-        Try it yourself
-      </Text>
-      <Text className={`text-xl text-center mb-4 ${mutedColor}`}>
-        Interactive demo - Chat with our AI assistant
-      </Text>
-      <Text className={`text-sm text-center mb-12 ${mutedColor}`}>
-        This is a demo environment. Try asking to analyze a job posting!
-      </Text>
+    <View className={`px-6 py-24 ${accentBg} border-y ${borderColor}`}>
+      <View className="max-w-3xl mx-auto mb-16 items-center">
+        <View className={`mb-4 px-4 py-2 ${isDarkMode ? 'bg-blue-500/10' : 'bg-blue-50'} border ${isDarkMode ? 'border-blue-500/20' : 'border-blue-200'} rounded-full self-center`}>
+          <Text className={`${isDarkMode ? 'text-blue-400' : 'text-blue-600'} text-xs font-bold tracking-wide`}>
+            RESUME ANALYSIS
+          </Text>
+        </View>
+        <Text className={`text-4xl md:text-5xl font-black text-center mb-4 ${textColor}`}>
+          See resume analysis in action
+        </Text>
+        <Text className={`text-lg text-center ${mutedColor}`}>
+          Chat with our AI assistant to get instant feedback on your resume fit
+        </Text>
+      </View>
       <View className="max-w-3xl mx-auto w-full">
         <View className={`${cardBg} border ${borderColor} rounded-3xl shadow-2xl overflow-hidden w-full`}>
           <View className={`flex-row items-center p-4 border-b ${borderColor} ${isDarkMode ? 'bg-zinc-900/50' : 'bg-gray-50'}`}>

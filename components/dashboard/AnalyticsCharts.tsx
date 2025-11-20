@@ -75,102 +75,114 @@ export function AnalyticsCharts({ analyses }: AnalyticsChartsProps) {
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5);
 
+  const isMobile = screenWidth < 768;
+  const isTablet = screenWidth >= 768 && screenWidth < 1024;
+
   return (
-    <View className="flex-row flex-wrap -mx-3">
-      <View className="w-full px-3 mb-6" style={{ width: isWeb && screenWidth > 1024 ? '66.666%' : '100%' }}>
-        {analyses.length > 0 && pieData.length > 0 && (
-          <View className="bg-zinc-900/50 border border-zinc-800/50 rounded-2xl p-5 mb-6">
-            <Text className="text-white text-base font-semibold mb-4">Score Distribution</Text>
-            <View className="items-center overflow-hidden">
-              <PieChart
-                data={pieData}
-                width={Math.min(screenWidth - 100, isWeb && screenWidth > 1024 ? 350 : 320)}
-                height={220}
-                chartConfig={{
-                  color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-                  backgroundColor: "#0A0A0A",
-                  backgroundGradientFrom: "#0A0A0A",
-                  backgroundGradientTo: "#0A0A0A",
-                }}
-                accessor="population"
-                backgroundColor="transparent"
-                paddingLeft="15"
-                absolute
-              />
+    <View className="mb-6">
+      <Text className="text-white text-xl font-bold mb-4">Analytics</Text>
+
+      {/* Desktop: Charts left (66%), Strengths/Gaps right (33%) */}
+      {/* Tablet/Mobile: All stacked */}
+      <View className="flex-row flex-wrap -mx-3">
+        {/* Charts Column */}
+        <View className="w-full lg:w-2/3 px-3">
+          {analyses.length > 0 && pieData.length > 0 && (
+            <View className="bg-zinc-900/50 border border-zinc-800/50 rounded-2xl p-5 mb-6">
+              <Text className="text-white text-base font-semibold mb-4">Score Distribution</Text>
+              <View className="items-center overflow-hidden">
+                <PieChart
+                  data={pieData}
+                  width={Math.min(screenWidth - (isMobile ? 80 : 150), 350)}
+                  height={isMobile ? 200 : 220}
+                  chartConfig={{
+                    color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                    backgroundColor: "#0A0A0A",
+                    backgroundGradientFrom: "#0A0A0A",
+                    backgroundGradientTo: "#0A0A0A",
+                  }}
+                  accessor="population"
+                  backgroundColor="transparent"
+                  paddingLeft="15"
+                  absolute
+                />
+              </View>
             </View>
-          </View>
-        )}
-        {analyses.length > 1 && (
-          <View className="bg-zinc-900/50 border border-zinc-800/50 rounded-2xl p-5 mb-6">
-            <View className="flex-row items-center justify-between mb-4">
-              <Text className="text-white text-base font-semibold">Score Trend</Text>
-              {totalPages > 1 && (
-                <View className="flex-row items-center">
-                  <TouchableOpacity
-                    onPress={() => setCurrentPage(Math.max(0, currentPage - 1))}
-                    disabled={currentPage === 0}
-                    className={`px-3 py-1.5 rounded-lg mr-2 flex-row items-center ${currentPage === 0 ? 'opacity-30 bg-zinc-800/30' : 'bg-zinc-800/50'}`}
-                  >
-                    <Ionicons name="chevron-back" size={14} color="#a1a1aa" />
-                    <Text className="text-zinc-400 text-xs ml-1">Older</Text>
-                  </TouchableOpacity>
-                  <Text className="text-zinc-400 text-xs mx-2">
-                    Page {currentPage + 1} of {totalPages}
-                  </Text>
-                  <TouchableOpacity
-                    onPress={() => setCurrentPage(Math.min(totalPages - 1, currentPage + 1))}
-                    disabled={currentPage === totalPages - 1}
-                    className={`px-3 py-1.5 rounded-lg flex-row items-center ${currentPage === totalPages - 1 ? 'opacity-30 bg-zinc-800/30' : 'bg-zinc-800/50'}`}
-                  >
-                    <Text className="text-zinc-400 text-xs mr-1">Newer</Text>
-                    <Ionicons name="chevron-forward" size={14} color="#a1a1aa" />
-                  </TouchableOpacity>
-                </View>
-              )}
-            </View>
-            <View className="overflow-x-auto">
-              <LineChart
-                data={trendData}
-                width={paginatedAnalyses.length * 60}
-                height={220}
-                chartConfig={{
-                  backgroundColor: "#0A0A0A",
-                  backgroundGradientFrom: "#18181b",
-                  backgroundGradientTo: "#18181b",
-                  decimalPlaces: 0,
-                  color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`,
-                  labelColor: (opacity = 1) => `rgba(113, 113, 122, ${opacity})`,
-                  style: {
+          )}
+
+          {analyses.length > 1 && (
+            <View className="bg-zinc-900/50 border border-zinc-800/50 rounded-2xl p-5 mb-6">
+              <View className="flex-row items-center justify-between mb-4">
+                <Text className="text-white text-base font-semibold">Score Trend</Text>
+                {totalPages > 1 && (
+                  <View className="flex-row items-center">
+                    <TouchableOpacity
+                      onPress={() => setCurrentPage(Math.max(0, currentPage - 1))}
+                      disabled={currentPage === 0}
+                      className={`px-3 py-1.5 rounded-lg mr-2 flex-row items-center ${currentPage === 0 ? 'opacity-30 bg-zinc-800/30' : 'bg-zinc-800/50'}`}
+                    >
+                      <Ionicons name="chevron-back" size={14} color="#a1a1aa" />
+                      <Text className="text-zinc-400 text-xs ml-1">Older</Text>
+                    </TouchableOpacity>
+                    <Text className="text-zinc-400 text-xs mx-2">
+                      Page {currentPage + 1} of {totalPages}
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => setCurrentPage(Math.min(totalPages - 1, currentPage + 1))}
+                      disabled={currentPage === totalPages - 1}
+                      className={`px-3 py-1.5 rounded-lg flex-row items-center ${currentPage === totalPages - 1 ? 'opacity-30 bg-zinc-800/30' : 'bg-zinc-800/50'}`}
+                    >
+                      <Text className="text-zinc-400 text-xs mr-1">Newer</Text>
+                      <Ionicons name="chevron-forward" size={14} color="#a1a1aa" />
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
+              <View className="items-center">
+                <LineChart
+                  data={trendData}
+                  width={Math.min(screenWidth - (isMobile ? 80 : 150), 700)}
+                  height={isMobile ? 200 : 220}
+                  chartConfig={{
+                    backgroundColor: "#0A0A0A",
+                    backgroundGradientFrom: "#18181b",
+                    backgroundGradientTo: "#18181b",
+                    decimalPlaces: 0,
+                    color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`,
+                    labelColor: (opacity = 1) => `rgba(113, 113, 122, ${opacity})`,
+                    style: {
+                      borderRadius: 16
+                    },
+                    propsForDots: {
+                      r: isMobile ? "4" : "5",
+                      strokeWidth: "2",
+                      stroke: "#3b82f6"
+                    }
+                  }}
+                  withInnerLines={true}
+                  withOuterLines={true}
+                  withVerticalLines={false}
+                  withHorizontalLines={true}
+                  bezier
+                  style={{
+                    marginVertical: 8,
                     borderRadius: 16
-                  },
-                  propsForDots: {
-                    r: "5",
-                    strokeWidth: "2",
-                    stroke: "#3b82f6"
-                  }
-                }}
-                withInnerLines={true}
-                withOuterLines={true}
-                withVerticalLines={false}
-                withHorizontalLines={true}
-                bezier
-                style={{
-                  marginVertical: 8,
-                  borderRadius: 16
-                }}
-                getDotColor={() => '#3b82f6'}
-                segments={4}
-              />
+                  }}
+                  getDotColor={() => '#3b82f6'}
+                  segments={4}
+                />
+              </View>
+              <Text className="text-zinc-500 text-xs text-center mt-2">
+                Showing {startIndex + 1}-{endIndex} of {sortedAnalyses.length} application{sortedAnalyses.length !== 1 ? 's' : ''}
+              </Text>
             </View>
-            <Text className="text-zinc-500 text-xs text-center mt-2">
-              Showing {startIndex + 1}-{endIndex} of {sortedAnalyses.length} application{sortedAnalyses.length !== 1 ? 's' : ''}
-            </Text>
-          </View>
-        )}
-      </View>
-      <View className="w-full px-3 mb-6" style={{ width: isWeb && screenWidth > 1024 ? '33.333%' : '100%' }}>
-        {topStrengths.length > 0 && (
-          <View className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-4 mb-6">
+          )}
+        </View>
+
+        {/* Strengths & Gaps Column */}
+        <View className="w-full lg:w-1/3 px-3">
+          {topStrengths.length > 0 && (
+            <View className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-4 mb-6">
             <View className="flex-row items-center mb-3">
               <Ionicons name="trending-up" size={18} color="#34d399" />
               <Text className="text-emerald-400 text-sm font-semibold ml-2">Top Strengths</Text>
@@ -191,6 +203,7 @@ export function AnalyticsCharts({ analyses }: AnalyticsChartsProps) {
             ))}
           </View>
         )}
+
         {topGaps.length > 0 && (
           <View className="bg-rose-500/5 border border-rose-500/20 rounded-2xl p-4 mb-6">
             <View className="flex-row items-center mb-3">
@@ -213,6 +226,7 @@ export function AnalyticsCharts({ analyses }: AnalyticsChartsProps) {
             ))}
           </View>
         )}
+        </View>
       </View>
     </View>
   );
