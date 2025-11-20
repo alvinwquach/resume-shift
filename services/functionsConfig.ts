@@ -32,6 +32,7 @@ export const FUNCTIONS_ENDPOINTS = {
   ANALYZE_STREAM: getFunctionUrl('analyzeStream'),
   SEND_EMAIL: getFunctionUrl('sendEmail'),
   FETCH_JOB: getFunctionUrl('fetchJob'),
+  RANK_PROJECTS: getFunctionUrl('rankProjects'),
 } as const;
 
 export default FUNCTIONS_ENDPOINTS;

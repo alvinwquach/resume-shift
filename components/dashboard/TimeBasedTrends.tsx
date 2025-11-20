@@ -122,16 +122,23 @@ export function TimeBasedTrends({ analyses }: TimeBasedTrendsProps) {
     groupedData[period].count > (groupedData[max]?.count || 0) ? period : max
   , periods[0]) || 'N/A';
 
+  const isMobile = screenWidth < 768;
+
   return (
     <View className="mb-6">
       <View className="flex-row items-center justify-between mb-4">
         <Text className="text-white text-lg font-semibold">Activity Trends</Text>
       </View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-4">
-        <View className="flex-row">
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        className="mb-4"
+        contentContainerStyle={{ paddingRight: 20 }}
+      >
+        <View className="flex-row gap-2">
           <TouchableOpacity
             onPress={() => setTimeRange('day')}
-            className={`mr-2 px-4 py-2 rounded-lg ${timeRange === 'day' ? 'bg-blue-600' : 'bg-zinc-900/50 border border-zinc-800/50'}`}
+            className={`px-4 py-2 rounded-lg ${timeRange === 'day' ? 'bg-blue-600' : 'bg-zinc-900/50 border border-zinc-800/50'}`}
           >
             <Text className={`text-xs font-medium ${timeRange === 'day' ? 'text-white' : 'text-zinc-400'}`}>
               Daily
@@ -139,7 +146,7 @@ export function TimeBasedTrends({ analyses }: TimeBasedTrendsProps) {
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => setTimeRange('week')}
-            className={`mr-2 px-4 py-2 rounded-lg ${timeRange === 'week' ? 'bg-blue-600' : 'bg-zinc-900/50 border border-zinc-800/50'}`}
+            className={`px-4 py-2 rounded-lg ${timeRange === 'week' ? 'bg-blue-600' : 'bg-zinc-900/50 border border-zinc-800/50'}`}
           >
             <Text className={`text-xs font-medium ${timeRange === 'week' ? 'text-white' : 'text-zinc-400'}`}>
               Weekly
@@ -147,7 +154,7 @@ export function TimeBasedTrends({ analyses }: TimeBasedTrendsProps) {
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => setTimeRange('month')}
-            className={`mr-2 px-4 py-2 rounded-lg ${timeRange === 'month' ? 'bg-blue-600' : 'bg-zinc-900/50 border border-zinc-800/50'}`}
+            className={`px-4 py-2 rounded-lg ${timeRange === 'month' ? 'bg-blue-600' : 'bg-zinc-900/50 border border-zinc-800/50'}`}
           >
             <Text className={`text-xs font-medium ${timeRange === 'month' ? 'text-white' : 'text-zinc-400'}`}>
               Monthly
@@ -155,7 +162,7 @@ export function TimeBasedTrends({ analyses }: TimeBasedTrendsProps) {
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => setTimeRange('quarter')}
-            className={`mr-2 px-4 py-2 rounded-lg ${timeRange === 'quarter' ? 'bg-blue-600' : 'bg-zinc-900/50 border border-zinc-800/50'}`}
+            className={`px-4 py-2 rounded-lg ${timeRange === 'quarter' ? 'bg-blue-600' : 'bg-zinc-900/50 border border-zinc-800/50'}`}
           >
             <Text className={`text-xs font-medium ${timeRange === 'quarter' ? 'text-white' : 'text-zinc-400'}`}>
               Quarterly
@@ -171,8 +178,8 @@ export function TimeBasedTrends({ analyses }: TimeBasedTrendsProps) {
           </TouchableOpacity>
         </View>
       </ScrollView>
-      <View className="flex-row mb-4 -mx-2">
-        <View className="w-1/4 px-2">
+      <View className="flex-row flex-wrap mb-4 -mx-2">
+        <View className="w-1/2 md:w-1/4 px-2 mb-3">
           <View className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3">
             <View className="flex-row items-center justify-between mb-1">
               <Text className="text-blue-400 text-xs font-medium">Total Apps</Text>
@@ -182,7 +189,7 @@ export function TimeBasedTrends({ analyses }: TimeBasedTrendsProps) {
             <Text className="text-zinc-500 text-xs mt-1">All time</Text>
           </View>
         </View>
-        <View className="w-1/4 px-2">
+        <View className="w-1/2 md:w-1/4 px-2 mb-3">
           <View className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3">
             <View className="flex-row items-center justify-between mb-1">
               <Text className="text-emerald-400 text-xs font-medium">Recent</Text>
@@ -206,7 +213,7 @@ export function TimeBasedTrends({ analyses }: TimeBasedTrendsProps) {
             </View>
           </View>
         </View>
-        <View className="w-1/4 px-2">
+        <View className="w-1/2 md:w-1/4 px-2 mb-3">
           <View className="bg-purple-500/10 border border-purple-500/20 rounded-xl p-3">
             <View className="flex-row items-center justify-between mb-1">
               <Text className="text-purple-400 text-xs font-medium">Avg Score</Text>
@@ -216,7 +223,7 @@ export function TimeBasedTrends({ analyses }: TimeBasedTrendsProps) {
             <Text className="text-zinc-500 text-xs mt-1">All time avg</Text>
           </View>
         </View>
-        <View className="w-1/4 px-2">
+        <View className="w-1/2 md:w-1/4 px-2 mb-3">
           <View className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
             <View className="flex-row items-center justify-between mb-1">
               <Text className="text-amber-400 text-xs font-medium">Peak</Text>

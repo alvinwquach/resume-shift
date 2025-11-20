@@ -10,6 +10,7 @@ import extractResumeHandler from './api/extractResume';
 import analyzeStreamHandler from './api/analyzeStream';
 import fetchJobHandler from './api/fetchJob';
 import sendEmailHandler from './api/sendEmail';
+import rankProjectsHandler from './api/rankProjects';
 
 const PORT = process.env.PORT || 3001;
 
@@ -81,6 +82,9 @@ const server = http.createServer(async (req, res) => {
     } else if (pathname === '/api/sendEmail') {
       console.log('[dev-server] Handling /api/sendEmail');
       await sendEmailHandler(vercelReq, vercelRes);
+    } else if (pathname === '/api/rankProjects') {
+      console.log('[dev-server] Handling /api/rankProjects');
+      await rankProjectsHandler(vercelReq, vercelRes);
     } else {
       res.writeHead(404, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: 'Not found' }));
@@ -101,5 +105,6 @@ server.listen(PORT, () => {
   console.log(`  POST http://localhost:${PORT}/api/extractResume`);
   console.log(`  POST http://localhost:${PORT}/api/analyzeStream`);
   console.log(`  POST http://localhost:${PORT}/api/fetchJob`);
-  console.log(`  POST http://localhost:${PORT}/api/sendEmail\n`);
+  console.log(`  POST http://localhost:${PORT}/api/sendEmail`);
+  console.log(`  POST http://localhost:${PORT}/api/rankProjects\n`);
 });
