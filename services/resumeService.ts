@@ -102,6 +102,12 @@ export async function getAllUserResumes(userId: string): Promise<UserResume[]> {
     const resumes: UserResume[] = [];
     resumesSnapshot.forEach((doc) => {
       const data = doc.data();
+
+      if (!data.fileName || !data.fileUrl || !data.storagePath || !data.extractedText) {
+        console.warn(`Skipping invalid resume document ${doc.id}: missing required fields`);
+        return;
+      }
+
       resumes.push({
         id: doc.id,
         fileName: data.fileName,
@@ -117,7 +123,6 @@ export async function getAllUserResumes(userId: string): Promise<UserResume[]> {
       });
     });
 
-    // Sort by uploadedAt (newest first) and isDefault (default first)
     resumes.sort((a, b) => {
       if (a.isDefault && !b.isDefault) return -1;
       if (!a.isDefault && b.isDefault) return 1;

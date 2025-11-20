@@ -13,9 +13,9 @@ export default function Optimize() {
   const { user } = useAuth();
   const [inputText, setInputText] = useState("");
   const [selectedResumeId, setSelectedResumeId] = useState<string | null>(null);
+  const [resumeSwitcherExpanded, setResumeSwitcherExpanded] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
 
-  // Load resume data
   const {
     resumeFile,
     resumeText,
@@ -195,74 +195,145 @@ export default function Optimize() {
         ))}
       </ScrollView>
 
-      <View className="px-4 pb-6 border-t border-zinc-800/50 bg-black/95" style={{ paddingBottom: Platform.OS === "web" ? 24 : 32 }}>
-        <View className="flex-row items-center mt-4">
-          <View className={`flex-1 rounded-3xl mr-2 ${
-            resumeFile
-              ? 'bg-zinc-900/80 border border-zinc-800/60'
-              : 'bg-zinc-900/40 border border-zinc-800/40'
-          }`}>
-            {!resumeFile ? (
-              <View className="px-4 py-3 flex-row items-center">
-                <Ionicons name="alert-circle-outline" size={16} color="#71717a" />
-                <Text className="text-zinc-500 text-sm ml-2">
-                  Upload resume on Dashboard to get started
+      <View className="border-t border-zinc-800/50 bg-black/95">
+        {resumeFile && allResumes.length > 1 && (
+          <View className="px-4 pt-3">
+            <TouchableOpacity
+              onPress={() => setResumeSwitcherExpanded(!resumeSwitcherExpanded)}
+              className="flex-row items-center justify-between px-3 py-2 bg-zinc-900/60 border border-zinc-800/50 rounded-lg mb-2"
+              activeOpacity={0.7}
+            >
+              <View className="flex-row items-center flex-1">
+                <Ionicons name="document-text" size={14} color="#22c55e" />
+                <Text className="text-green-400 text-xs ml-2 flex-1" numberOfLines={1}>
+                  {resumeFile.name}
                 </Text>
               </View>
-            ) : (
-              <TextInput
-                value={inputText}
-                onChangeText={setInputText}
-                placeholder={manualJobMode ? "Paste job description text..." : "Paste job posting URL..."}
-                placeholderTextColor="#71717a"
-                className="text-white text-sm px-4"
-                style={{
-                  minHeight: 40,
-                  maxHeight: 120,
-                  paddingTop: 11,
-                  paddingBottom: 11,
-                  fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
-                }}
-                multiline={true}
-                editable={!isLoading}
-                onSubmitEditing={handleSendMessage}
-                returnKeyType="send"
-                onKeyPress={(e) => {
-                  if (Platform.OS === 'web' && e.nativeEvent.key === 'Enter') {
-                    const nativeEvent = e.nativeEvent as any;
-                    if (!nativeEvent.shiftKey) {
-                      e.preventDefault();
-                      handleSendMessage();
-                    }
-                  }
-                }}
-              />
+              <View className="flex-row items-center ml-2">
+                <Text className="text-zinc-500 text-xs mr-1.5">{allResumes.length} versions</Text>
+                <Ionicons
+                  name={resumeSwitcherExpanded ? "chevron-up" : "chevron-down"}
+                  size={14}
+                  color="#71717a"
+                />
+              </View>
+            </TouchableOpacity>
+            {resumeSwitcherExpanded && (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                className="mb-2"
+                contentContainerStyle={{ paddingRight: 16 }}
+              >
+                {allResumes.map((resume) => {
+                  const isSelected = resume.id === selectedResumeId || (!selectedResumeId && resume.isDefault);
+                  return (
+                    <TouchableOpacity
+                      key={resume.id}
+                      onPress={() => {
+                        setSelectedResumeId(resume.id);
+                        setMessages([]); 
+                        setResumeSwitcherExpanded(false);
+                      }}
+                      className={`mr-2 px-3 py-2 rounded-lg border ${
+                        isSelected
+                          ? 'bg-blue-600/20 border-blue-600/50'
+                          : 'bg-zinc-900/50 border-zinc-800'
+                      }`}
+                      style={{ minWidth: 140 }}
+                    >
+                      <View className="flex-row items-center mb-1">
+                        <Ionicons
+                          name="document-text"
+                          size={12}
+                          color={isSelected ? "#3b82f6" : "#71717a"}
+                        />
+                        <Text
+                          className={`text-xs font-medium ml-1.5 flex-1 ${
+                            isSelected ? 'text-blue-400' : 'text-zinc-400'
+                          }`}
+                          numberOfLines={1}
+                        >
+                          {resume.label || resume.fileName}
+                        </Text>
+                        {isSelected && (
+                          <Ionicons name="checkmark-circle" size={12} color="#3b82f6" />
+                        )}
+                      </View>
+                      <Text className="text-zinc-600 text-xs" numberOfLines={1}>
+                        {new Date(resume.uploadedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
             )}
           </View>
-          <TouchableOpacity
-            onPress={handleSendMessage}
-            disabled={!inputText.trim() || isLoading || !resumeFile}
-            className={`w-10 h-10 rounded-full items-center justify-center active:opacity-80 ${
-              inputText.trim() && !isLoading && resumeFile
-                ? 'bg-blue-600'
-                : 'bg-zinc-800/60'
-            }`}
-            activeOpacity={0.8}
-          >
-            <Ionicons
-              name="send"
-              size={18}
-              color={inputText.trim() && !isLoading && resumeFile ? "#ffffff" : "#52525b"}
-            />
-          </TouchableOpacity>
-        </View>
-        {resumeFile && (
-          <View className="flex-row items-center mt-3 px-2 py-2 bg-green-500/10 border border-green-500/20 rounded-xl">
-            <Ionicons name="checkmark-circle" size={18} color="#22c55e" />
-            <Text className="text-green-400 text-sm ml-2 flex-1 font-medium">{resumeFile.name}</Text>
-          </View>
         )}
+        <View className="px-4 pb-6" style={{ paddingBottom: Platform.OS === "web" ? 24 : 32 }}>
+          <View className="flex-row items-center">
+            <View className={`flex-1 rounded-3xl mr-2 ${
+              resumeFile
+                ? 'bg-zinc-900/80 border border-zinc-800/60'
+                : 'bg-zinc-900/40 border border-zinc-800/40'
+            }`}>
+              {!resumeFile ? (
+                <View className="px-4 py-3 flex-row items-center">
+                  <Ionicons name="alert-circle-outline" size={16} color="#71717a" />
+                  <Text className="text-zinc-500 text-sm ml-2">
+                    Upload resume on Dashboard to get started
+                  </Text>
+                </View>
+              ) : (
+                <TextInput
+                  value={inputText}
+                  onChangeText={setInputText}
+                  placeholder={manualJobMode ? "Paste job description text..." : "Paste job posting URL..."}
+                  placeholderTextColor="#71717a"
+                  className="text-white text-sm px-4"
+                  style={{
+                    minHeight: 40,
+                    maxHeight: 120,
+                    paddingTop: 11,
+                    paddingBottom: 11,
+                    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+                  }}
+                  multiline={true}
+                  editable={!isLoading}
+                  onSubmitEditing={handleSendMessage}
+                  returnKeyType="send"
+                  onKeyPress={(e) => {
+                    if (Platform.OS === 'web' && e.nativeEvent.key === 'Enter') {
+                      const nativeEvent = e.nativeEvent as any;
+                      if (!nativeEvent.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage();
+                      }
+                    }
+                  }}
+                />
+              )}
+            </View>
+            <TouchableOpacity
+              onPress={handleSendMessage}
+              disabled={!inputText.trim() || isLoading || !resumeFile}
+              className={`w-10 h-10 rounded-full items-center justify-center active:opacity-80 ${
+                inputText.trim() && !isLoading && resumeFile
+                  ? 'bg-blue-600'
+                  : 'bg-zinc-800/60'
+              }`}
+              activeOpacity={0.8}
+            >
+              <Ionicons
+                name="send"
+                size={18}
+                color={inputText.trim() && !isLoading && resumeFile ? "#ffffff" : "#52525b"}
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
+
     </KeyboardAvoidingView>
   );
 }
