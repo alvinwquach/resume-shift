@@ -62,8 +62,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       'TypeScript', 'JavaScript', 'Python', 'Java', 'Go', 'Rust', 'Swift', 'Kotlin', 'C++', 'C#',
       // Backend & APIs
       'Node.js', 'Express', 'FastAPI', 'Django', 'Flask', 'GraphQL', 'REST', 'API', 'Apollo',
-      // Databases
-      'Firebase', 'Supabase', 'MongoDB', 'PostgreSQL', 'MySQL', 'Redis', 'Firestore', 'Prisma', 'Drizzle',
+      // Databases & SQL
+      'SQL', 'Firebase', 'Supabase', 'MongoDB', 'PostgreSQL', 'MySQL', 'Redis', 'Firestore', 'Prisma', 'Drizzle', 'SQLite', 'pgvector',
       // Cloud & DevOps
       'AWS', 'GCP', 'Azure', 'Vercel', 'Docker', 'Kubernetes', 'CI/CD',
       // Styling & UI
@@ -82,8 +82,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       resumeText.toLowerCase().includes(tech.toLowerCase())
     );
 
+    // SQL-specific detection: If any SQL database is found, mark SQL as present
+    const sqlDatabases = ['PostgreSQL', 'MySQL', 'SQLite', 'Supabase', 'Prisma', 'Drizzle'];
+    const hasSqlDatabase = sqlDatabases.some(db =>
+      resumeText.toLowerCase().includes(db.toLowerCase())
+    );
+    const hasSqlKeyword = resumeText.toLowerCase().includes('sql');
+
+    // Add SQL to foundTechs if any SQL database or SQL keyword is present
+    if ((hasSqlDatabase || hasSqlKeyword) && !foundTechs.includes('SQL')) {
+      foundTechs.push('SQL');
+    }
+
     const techContext = foundTechs.length > 0
       ? `\n\nIMPORTANT - Technologies detected in resume: ${foundTechs.join(', ')}\nDo NOT mark these as missing!`
+      : '';
+
+    // Additional SQL context if SQL databases are present
+    const sqlContext = hasSqlDatabase || hasSqlKeyword
+      ? `\n\nSQL DETECTION: This candidate has SQL experience (found: ${[
+          hasSqlKeyword ? 'SQL' : null,
+          ...sqlDatabases.filter(db => resumeText.toLowerCase().includes(db.toLowerCase()))
+        ].filter(Boolean).join(', ')}). Any SQL databases (PostgreSQL, MySQL, SQLite, etc.) count as SQL experience.`
       : '';
 
     const result = streamObject({
@@ -123,7 +143,7 @@ SCORING GUIDANCE:
 - <50: Poor match, may not be suitable for this role
 
 Be specific, honest, and constructive. Focus on actionable improvements that will genuinely help the candidate.`,
-      prompt: `Analyze this resume against the job posting and provide a comprehensive, detailed analysis.${techContext}
+      prompt: `Analyze this resume against the job posting and provide a comprehensive, detailed analysis.${techContext}${sqlContext}
 
 RESUME:
 ${resumeText}
