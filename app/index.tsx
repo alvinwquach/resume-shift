@@ -66,6 +66,104 @@ export default function LandingPage() {
             borderColor={borderColor}
           />
         </View>
+        <View className={isDarkMode ? 'bg-black' : 'bg-white'}>
+          <View className="px-6 py-24">
+            <View className="max-w-7xl mx-auto">
+              <View className="items-center mb-16">
+                <Text className={`${textColor} text-4xl md:text-5xl font-black mb-6 text-center leading-tight`}>
+                  Smart Portfolio Integration
+                </Text>
+                <Text className={`text-xl ${mutedColor} text-center max-w-3xl leading-relaxed`}>
+                  Your portfolio projects are automatically detected, scored, and factored into your compatibility score—no manual entry required.
+                </Text>
+              </View>
+
+              <View className="flex-row flex-wrap -mx-3">
+                {/* Left Column - How it works */}
+                <View className="w-full md:w-1/2 px-3 mb-6">
+                  <View className={`${cardBg} border ${borderColor} rounded-3xl p-8 h-full shadow-lg`}>
+                    <View className={`w-14 h-14 rounded-2xl ${isDarkMode ? 'bg-cyan-500' : 'bg-cyan-600'} items-center justify-center mb-6`}>
+                      <Ionicons name="bulb" size={28} color="white" />
+                    </View>
+                    <Text className={`${textColor} text-2xl font-black mb-4`}>How it works</Text>
+                    <Text className={`${mutedColor} leading-relaxed text-base mb-6`}>
+                      When you analyze your resume, our AI automatically scans for a PROJECTS section, evaluates each project's technical depth, impact keywords, and tech stack breadth.
+                    </Text>
+                    <View className={`${isDarkMode ? 'bg-cyan-500/10' : 'bg-cyan-50'} border ${isDarkMode ? 'border-cyan-500/20' : 'border-cyan-200'} rounded-2xl p-5`}>
+                      <Text className={`${textColor} font-bold text-lg mb-2`}>Score Adjustment</Text>
+                      <Text className={`${mutedColor} text-base`}>
+                        Your compatibility score adjusts by up to{' '}
+                        <Text className={isDarkMode ? 'text-cyan-400 font-bold' : 'text-cyan-600 font-bold'}>+10 points</Text>{' '}
+                        for strong portfolios that demonstrate execution quality.
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+
+                {/* Right Column - Portfolio Tiers */}
+                <View className="w-full md:w-1/2 px-3 mb-6">
+                  <View className="space-y-4 h-full">
+                    <View className={`${isDarkMode ? 'bg-emerald-500/10' : 'bg-emerald-50'} border ${isDarkMode ? 'border-emerald-500/30' : 'border-emerald-200'} rounded-2xl p-6 shadow-lg`}>
+                      <View className="flex-row items-start mb-3">
+                        <View className={`w-12 h-12 rounded-xl ${isDarkMode ? 'bg-emerald-500' : 'bg-emerald-600'} items-center justify-center mr-4 flex-shrink-0`}>
+                          <Ionicons name="trending-up" size={24} color="white" />
+                        </View>
+                        <View className="flex-1">
+                          <Text className={`${textColor} text-xl font-black mb-1`}>Strong Portfolio</Text>
+                          <Text className={`${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'} text-sm font-semibold`}>avg 7-10/10</Text>
+                        </View>
+                      </View>
+                      <Text className={`${mutedColor} leading-relaxed`}>
+                        <Text className="font-bold">+5 to +10 points</Text> boost. Demonstrates execution quality and validates claimed skills.
+                      </Text>
+                    </View>
+
+                    <View className={`${isDarkMode ? 'bg-yellow-500/10' : 'bg-yellow-50'} border ${isDarkMode ? 'border-yellow-500/30' : 'border-yellow-200'} rounded-2xl p-6 shadow-lg`}>
+                      <View className="flex-row items-start mb-3">
+                        <View className={`w-12 h-12 rounded-xl ${isDarkMode ? 'bg-yellow-500' : 'bg-yellow-600'} items-center justify-center mr-4 flex-shrink-0`}>
+                          <Ionicons name="remove" size={24} color="white" />
+                        </View>
+                        <View className="flex-1">
+                          <Text className={`${textColor} text-xl font-black mb-1`}>Average Portfolio</Text>
+                          <Text className={`${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'} text-sm font-semibold`}>avg 5-6/10</Text>
+                        </View>
+                      </View>
+                      <Text className={`${mutedColor} leading-relaxed`}>
+                        <Text className="font-bold">No adjustment.</Text> Portfolio is unremarkable.
+                      </Text>
+                    </View>
+
+                    <View className={`${isDarkMode ? 'bg-red-500/10' : 'bg-red-50'} border ${isDarkMode ? 'border-red-500/30' : 'border-red-200'} rounded-2xl p-6 shadow-lg`}>
+                      <View className="flex-row items-start mb-3">
+                        <View className={`w-12 h-12 rounded-xl ${isDarkMode ? 'bg-red-500' : 'bg-red-600'} items-center justify-center mr-4 flex-shrink-0`}>
+                          <Ionicons name="trending-down" size={24} color="white" />
+                        </View>
+                        <View className="flex-1">
+                          <Text className={`${textColor} text-xl font-black mb-1`}>Weak Portfolio</Text>
+                          <Text className={`${isDarkMode ? 'text-red-400' : 'text-red-600'} text-sm font-semibold`}>avg 1-4/10</Text>
+                        </View>
+                      </View>
+                      <Text className={`${mutedColor} leading-relaxed`}>
+                        <Text className="font-bold">-3 to -5 points</Text> penalty. May indicate gaps or lack of depth.
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              </View>
+
+              {/* CTA Bottom */}
+              <View className={`mt-6 ${isDarkMode ? 'bg-gradient-to-r from-blue-500/10 to-purple-500/10' : 'bg-gradient-to-r from-blue-50 to-purple-50'} rounded-2xl px-8 py-6 border ${isDarkMode ? 'border-blue-500/20' : 'border-blue-200'} shadow-lg`}>
+                <View className="flex-row items-center">
+                  <Ionicons name="information-circle" size={28} color={isDarkMode ? '#60a5fa' : '#3b82f6'} />
+                  <Text className={`${isDarkMode ? 'text-blue-400' : 'text-blue-600'} text-base font-semibold ml-4 flex-1`}>
+                    Want deeper analysis? Visit the "My Projects" tab to rank projects with full AI scoring across multiple tech roles
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </View>
+        </View>
+
         <View className={isDarkMode ? 'bg-gradient-to-b from-blue-900/20 via-blue-950/40 to-blue-950/20' : 'bg-gradient-to-b from-blue-50 via-sky-50 to-white'}>
           <ResumeAnalysisDemoSection
             isDarkMode={isDarkMode}
@@ -76,7 +174,6 @@ export default function LandingPage() {
             accentBg={accentBg}
           />
         </View>
-
         <View className={isDarkMode ? 'bg-zinc-950' : 'bg-white'}>
           <ProjectRankingFeature
             isDarkMode={isDarkMode}
@@ -177,9 +274,13 @@ export default function LandingPage() {
                       </View>
                       <Text className={`${textColor} text-2xl font-black mb-3`}>Resume Analysis Agent</Text>
                       <Text className={`${mutedColor} leading-relaxed mb-4`}>
-                        Paste any job posting. Get your compatibility score (0-100), skill gaps, missing keywords, and project ideas with impact estimates.
+                        Paste any job posting. Get your compatibility score with automatic portfolio boost, skill gaps, missing keywords, and project ideas with impact estimates.
                       </Text>
                       <View className="space-y-2">
+                        <View className="flex-row items-center">
+                          <View className={`w-1.5 h-1.5 rounded-full ${isDarkMode ? 'bg-blue-400' : 'bg-blue-600'} mr-2`} />
+                          <Text className={`${mutedColor} text-sm`}>Portfolio-adjusted scoring (auto-detects projects)</Text>
+                        </View>
                         <View className="flex-row items-center">
                           <View className={`w-1.5 h-1.5 rounded-full ${isDarkMode ? 'bg-blue-400' : 'bg-blue-600'} mr-2`} />
                           <Text className={`${mutedColor} text-sm`}>Technical skills matching</Text>
@@ -190,7 +291,7 @@ export default function LandingPage() {
                         </View>
                         <View className="flex-row items-center">
                           <View className={`w-1.5 h-1.5 rounded-full ${isDarkMode ? 'bg-blue-400' : 'bg-blue-600'} mr-2`} />
-                          <Text className={`${mutedColor} text-sm`}>ATS keyword optimization</Text>
+                          <Text className={`${mutedColor} text-sm`}>Multiple resume version management</Text>
                         </View>
                       </View>
                     </View>
@@ -251,11 +352,11 @@ export default function LandingPage() {
                     <View className={`${cardBg} border ${borderColor} rounded-2xl p-6`}>
                       <Text className={`${textColor} text-2xl font-bold mb-3`}>Analyze</Text>
                       <Text className={`${mutedColor} leading-relaxed mb-4`}>
-                        Upload your resume and paste a job posting. Our AI analyzes your compatibility across multiple dimensions in ~10 seconds.
+                        Upload one or multiple resume versions and paste a job posting. Our AI analyzes your compatibility across multiple dimensions, automatically detects portfolio projects, and adjusts your score based on project quality.
                       </Text>
                       <View className={`${isDarkMode ? 'bg-blue-500/10' : 'bg-blue-50'} rounded-lg px-3 py-2`}>
                         <Text className={`${isDarkMode ? 'text-blue-400' : 'text-blue-600'} text-sm font-semibold`}>
-                          ⚡ Results in ~10 seconds
+                          ⚡ Results in ~10 seconds + portfolio boost
                         </Text>
                       </View>
                     </View>
@@ -353,16 +454,16 @@ export default function LandingPage() {
                     <Ionicons name="document-text" size={24} color="white" />
                   </View>
                   <Text className={`${textColor} font-bold text-center mb-1`}>Resume Analysis</Text>
-                  <Text className={`${mutedColor} text-xs text-center`}>Cross-role skill matching</Text>
+                  <Text className={`${mutedColor} text-xs text-center`}>Portfolio-adjusted scoring</Text>
                 </View>
               </View>
               <View className={`${cardBg} border ${borderColor} rounded-xl px-6 py-4 shadow-lg flex-1 min-w-[200px]`}>
                 <View className="items-center">
                   <View className={`w-12 h-12 rounded-xl ${isDarkMode ? 'bg-gradient-to-br from-purple-500 to-pink-500' : 'bg-gradient-to-br from-purple-400 to-pink-400'} items-center justify-center mb-3`}>
-                    <Ionicons name="analytics" size={24} color="white" />
+                    <Ionicons name="layers" size={24} color="white" />
                   </View>
-                  <Text className={`${textColor} font-bold text-center mb-1`}>Project Ranking</Text>
-                  <Text className={`${mutedColor} text-xs text-center`}>Know what to showcase</Text>
+                  <Text className={`${textColor} font-bold text-center mb-1`}>Multiple Versions</Text>
+                  <Text className={`${mutedColor} text-xs text-center`}>Manage resumes per role</Text>
                 </View>
               </View>
               <View className={`${cardBg} border ${borderColor} rounded-xl px-6 py-4 shadow-lg flex-1 min-w-[200px]`}>

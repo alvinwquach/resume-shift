@@ -182,7 +182,7 @@ export function AnalysisResults({ result, userEmail, jobTitle, jobCompany, resum
           </Text>
         </View>
       )}
-      {userEmail && (
+      {userEmail && result.overallFeedback && (
         <TouchableOpacity
           onPress={handleEmailSummary}
           disabled={isSendingEmail}

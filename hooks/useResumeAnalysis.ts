@@ -92,12 +92,13 @@ export function useResumeAnalysis(
     messages: Message[],
     setMessages: React.Dispatch<React.SetStateAction<Message[]>>
   ) => {
+    console.time('⏱️ Total Analysis Time');
     setIsLoading(true);
 
     const streamingMsg: Message = {
       id: (Date.now() + 1).toString(),
       role: 'assistant',
-      content: "Let me analyze that job posting...",
+      content: "Fetching job posting...",
       timestamp: new Date(),
       isStreaming: true,
     };
@@ -105,6 +106,7 @@ export function useResumeAnalysis(
 
     try {
       // Fetch job posting
+      console.time('⏱️ Fetch Job Posting');
       const jobResponse = await fetch(FUNCTIONS_ENDPOINTS.FETCH_JOB, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -117,18 +119,21 @@ export function useResumeAnalysis(
       }
 
       const jobData = await jobResponse.json();
+      console.timeEnd('⏱️ Fetch Job Posting');
 
       if (!jobData.description || jobData.description.length < 200) {
         throw new Error("The job posting could not be accessed. This website may block automated access. Please try a different job posting.");
       }
 
+      // Update message with job found info
       setMessages(prev => prev.map(msg =>
         msg.id === streamingMsg.id
-          ? { ...msg, content: `Found the job posting: ${jobData.title || 'Job'} at ${jobData.company || 'Company'}\n\nAnalyzing your resume match...` }
+          ? { ...msg, content: `Found: **${jobData.title || 'Job'}** at **${jobData.company || 'Company'}**` }
           : msg
       ));
 
-      // Analyze resume
+      // Analyze resume (start streaming immediately)
+      console.time('⏱️ AI Analysis (streaming)');
       const analysisResponse = await fetch(FUNCTIONS_ENDPOINTS.ANALYZE_STREAM, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -147,9 +152,11 @@ export function useResumeAnalysis(
         jobData.title,
         jobData.company
       );
+      console.timeEnd('⏱️ AI Analysis (streaming)');
 
       // Save to Firebase
       if (userId && partialResult) {
+        console.time('⏱️ Save to Firebase');
         await saveAnalysisToFirebase(
           userId,
           jobUrl,
@@ -160,28 +167,32 @@ export function useResumeAnalysis(
           allResumes,
           selectedResumeId
         );
+        console.timeEnd('⏱️ Save to Firebase');
       }
+
+      console.timeEnd('⏱️ Total Analysis Time');
     } catch (error) {
+      console.timeEnd('⏱️ Total Analysis Time');
       const errorMessage = error instanceof Error ? error.message : "Sorry, I encountered an error analyzing that job posting. Please check the URL and try again.";
 
       const isScrapingError = errorMessage.includes("could not be accessed") ||
                               errorMessage.includes("block") ||
                               errorMessage.includes("denied");
 
+      const errorMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: isScrapingError
+          ? `${errorMessage}\n\n💡 **Alternative**: You can manually paste the job description instead.\n\nPlease provide the following information:\n1. Job title\n2. Company name\n3. Full job description\n\nFormat: [Job Title] at [Company]\n[Job Description]`
+          : errorMessage,
+        timestamp: new Date(),
+        isStreaming: false,
+      };
+      setMessages(prev => [...prev, errorMsg]);
+
       if (isScrapingError) {
         setManualJobMode(true);
         setManualJobUrl(jobUrl);
-        setMessages(prev => prev.map(msg =>
-          msg.id === streamingMsg.id
-            ? {
-                ...msg,
-                content: `${errorMessage}\n\n💡 **Alternative**: You can manually paste the job description instead.\n\nPlease provide the following information:\n1. Job title\n2. Company name\n3. Full job description\n\nFormat: [Job Title] at [Company]\n[Job Description]`,
-                isStreaming: false
-              }
-            : msg
-        ));
-      } else {
-        handleAnalysisError(error, streamingMsg, setMessages);
       }
     } finally {
       setIsLoading(false);
@@ -208,6 +219,8 @@ export function useResumeAnalysis(
     const decoder = new TextDecoder();
     let buffer = "";
     let partialResult: Partial<ResumeAnalysisResult> = {};
+    let firstChunkReceived = false;
+    const startTime = Date.now();
 
     setMessages(prev => prev.map(msg =>
       msg.id === streamingMsg.id
@@ -215,19 +228,25 @@ export function useResumeAnalysis(
             ...msg,
             analysisResult: {},
             isStreaming: true,
-            content: '',
             jobTitle,
             jobCompany: company || undefined
           }
         : msg
     ));
 
+    console.time('⏱️ Time to First Chunk');
     while (true) {
       const { done, value } = await reader.read();
 
       if (done) {
-        console.log('Stream complete!');
+        const totalStreamTime = Date.now() - startTime;
+        console.log(`✅ Stream complete! Total streaming: ${totalStreamTime}ms`);
         break;
+      }
+
+      if (!firstChunkReceived) {
+        console.timeEnd('⏱️ Time to First Chunk');
+        firstChunkReceived = true;
       }
 
       const chunk = decoder.decode(value, { stream: true });
@@ -256,7 +275,6 @@ export function useResumeAnalysis(
                       ...msg,
                       analysisResult: partialResult,
                       isStreaming: true,
-                      content: '',
                       jobTitle,
                       jobCompany: company || undefined
                     }

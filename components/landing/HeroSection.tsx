@@ -69,7 +69,7 @@ export function HeroSection({ isDarkMode, textColor, mutedColor }: HeroSectionPr
           </View>
           <View className="items-center">
             <Text className={`text-4xl font-black ${isDarkMode ? 'bg-gradient-to-r from-purple-400 to-pink-400' : 'bg-gradient-to-r from-purple-600 to-pink-600'} bg-clip-text text-transparent mb-1`}>
-              ~10s
+              ~30s
             </Text>
             <Text className={`${mutedColor} text-sm font-semibold`}>Analysis Time</Text>
           </View>

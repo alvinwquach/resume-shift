@@ -1,7 +1,7 @@
+import * as DocumentPicker from 'expo-document-picker';
 import { useCallback, useState } from 'react';
 import { getAllUserResumes, UserResume } from '../services/resumeService';
 import { Message } from '../types/message';
-import * as DocumentPicker from 'expo-document-picker';
 
 export function useResumeLoader(
   userId: string | undefined,
@@ -45,7 +45,7 @@ export function useResumeLoader(
           if (messagesLength === 0 || (messagesLength === 1 && messages[0]?.role === 'assistant')) {
             const resumeLabel = resumeToUse.label || resumeToUse.fileName;
             const multipleResumesHint = resumes.length > 1
-              ? `\n\n💡 You have ${resumes.length} resume versions. Tap the resume name to switch between them.`
+              ? `\n\n💡 You have ${resumes.length} resume versions. Select a resume below to switch between them.`
               : '';
             setMessages([{
               id: '1',
