@@ -1,8 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import mammoth from 'mammoth';
+import { PDFParse } from 'pdf-parse';
 
 /**
- * Vercel Serverless Function to extract text from resume files (DOCX)
+ * Vercel Serverless Function to extract text from resume files (DOCX, PDF, TXT)
  * This function runs in Node.js runtime with full Buffer and mammoth support
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -102,6 +103,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     let extractedText = '';
 
+    console.log('[extractResume] File type detection:', {
+      mimeType,
+      fileName,
+      lowerFileName: fileName.toLowerCase(),
+      endsWithPdf: fileName.toLowerCase().endsWith('.pdf'),
+      isPdfMime: mimeType === 'application/pdf'
+    });
+
     // Parse DOCX files
     if (
       mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
@@ -127,6 +136,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return;
       }
     }
+    // Parse PDF files
+    else if (
+      mimeType === 'application/pdf' ||
+      fileName.toLowerCase().endsWith('.pdf')
+    ) {
+      console.log('[extractResume] Parsing PDF with pdf-parse...');
+
+      try {
+        // Convert Buffer to Uint8Array as required by pdf-parse
+        const uint8Array = new Uint8Array(buffer);
+        const parser = new PDFParse(uint8Array);
+        const textResult = await parser.getText();
+        extractedText = textResult.text;
+
+        console.log('[extractResume] Extracted text length:', extractedText.length);
+        console.log('[extractResume] PDF info:', {
+          pages: textResult.pages.length
+        });
+      } catch (pdfError) {
+        console.error('[extractResume] PDF parse error:', pdfError);
+        res.status(500).json({
+          error: 'Failed to parse PDF file',
+          details: pdfError instanceof Error ? pdfError.message : 'Unknown error'
+        });
+        return;
+      }
+    }
     // Parse plain text files
     else if (mimeType === 'text/plain' || fileName.toLowerCase().endsWith('.txt')) {
       console.log('[extractResume] Processing text file...');
@@ -135,7 +171,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Unsupported format
     else {
       res.status(400).json({
-        error: `Unsupported file type: ${mimeType || 'unknown'}. Please upload DOCX or TXT.`
+        error: `Unsupported file type: ${mimeType || 'unknown'}. Please upload PDF, DOCX, or TXT.`
       });
       return;
     }
