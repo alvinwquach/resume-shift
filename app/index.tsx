@@ -7,7 +7,6 @@ import { ProjectRankingDemoSection } from "../components/landing/ProjectRankingD
 import { ProjectRankingFeature } from "../components/landing/ProjectRankingFeature";
 import { ResumeAnalysisDemoSection } from "../components/landing/ResumeAnalysisDemoSection";
 import { ResumeAnalysisFeature } from "../components/landing/ResumeAnalysisFeature";
-import { TestimonialsSection } from "../components/landing/TestimonialsSection";
 
 export default function LandingPage() {
   const router = useRouter();
@@ -402,16 +401,7 @@ export default function LandingPage() {
             </View>
           </View>
         </View>
-        <View className={isDarkMode ? 'bg-gradient-to-b from-pink-950/30 via-rose-950/20 to-black' : 'bg-gradient-to-b from-purple-50 via-pink-50 to-white'}>
-          <TestimonialsSection
-            isDarkMode={isDarkMode}
-            textColor={textColor}
-            mutedColor={mutedColor}
-            cardBg={cardBg}
-            borderColor={borderColor}
-            accentBg={accentBg}
-          />
-        </View>
+    
         <View className={`py-24 relative overflow-hidden ${isDarkMode ? 'bg-gradient-to-b from-black via-zinc-950 to-black' : 'bg-gradient-to-b from-white via-gray-50 to-white'}`}>
           <View className={`absolute top-0 left-1/4 w-96 h-96 ${isDarkMode ? 'bg-blue-600/10' : 'bg-blue-400/20'} rounded-full blur-3xl`} />
           <View className={`absolute bottom-0 right-1/4 w-96 h-96 ${isDarkMode ? 'bg-purple-600/10' : 'bg-purple-400/20'} rounded-full blur-3xl`} />
