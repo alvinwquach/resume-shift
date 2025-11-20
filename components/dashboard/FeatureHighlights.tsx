@@ -1,5 +1,5 @@
-import { View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { Text, View } from 'react-native';
 
 export function FeatureHighlights() {
   const features = [
@@ -54,7 +54,7 @@ export function FeatureHighlights() {
         <View className="flex-row items-center">
           <Ionicons name="information-circle" size={16} color="#3b82f6" />
           <Text className="text-blue-400 text-xs ml-2 flex-1">
-            File types: DOC, DOCX, TXT • PDF support coming soon
+            File types: PDF, DOC, DOCX, TXT • PDF
           </Text>
         </View>
       </View>

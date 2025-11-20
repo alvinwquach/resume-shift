@@ -1,10 +1,10 @@
-import { View, Text, TouchableOpacity, ActivityIndicator, Platform, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
 import * as DocumentPicker from 'expo-document-picker';
+import { useState } from 'react';
+import { ActivityIndicator, Linking, Platform, Text, TouchableOpacity, View } from 'react-native';
 import Toast from 'react-native-toast-message';
-import { ConfirmDialog } from '../ConfirmDialog';
 import { UserResume } from '../../services/resumeService';
+import { ConfirmDialog } from '../ConfirmDialog';
 
 interface ResumeUploadSectionProps {
   resume: UserResume | null | undefined;
@@ -26,7 +26,7 @@ export function ResumeUploadSection({
   const handleUploadResume = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
-        type: ["text/plain", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"],
+        type: ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "text/plain"],
         copyToCacheDirectory: true,
       });
 
@@ -84,7 +84,7 @@ export function ResumeUploadSection({
                 Upload your resume
               </Text>
               <Text className="text-zinc-500 text-xs">
-                File types: DOC, DOCX, TXT
+                File types: PDF, DOC, DOCX, TXT
               </Text>
             </View>
             <View className="items-end">
@@ -133,7 +133,7 @@ export function ResumeUploadSection({
               Upload your resume
             </Text>
             <Text className="text-zinc-500 text-xs">
-              File types: DOC, DOCX, TXT
+              File types: PDF, DOC, DOCX, TXT
             </Text>
           </View>
           <TouchableOpacity
